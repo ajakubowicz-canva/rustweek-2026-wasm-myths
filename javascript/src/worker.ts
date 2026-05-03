@@ -4,6 +4,8 @@ import { benchmarkRunner } from "./core/runner.js";
 // Side effect register benchmarks
 import "./benchmarks/mono_mega/monomorphic.js";
 import "./benchmarks/mono_mega/megamorphic.js";
+import "./benchmarks/identity/wasm_identity.js";
+import "./benchmarks/identity/js_identity.js";
 
 import { type WorkerRequest, CALCULATE_SUM, RUN_BENCHMARKS, WorkerResponse } from './messages.js'
 
@@ -29,7 +31,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
         const result = sum(data.a, data.b);
         post({ action: "RESULT", id: requestId, payload: result });
     } else if (data.action === RUN_BENCHMARKS) {
-        const results = benchmarkRunner.run(data.requests);
+        const results = benchmarkRunner.run(data.requests, data.rounds);
         post({ action: "RESULT", id: requestId, payload: results });
     }
 };

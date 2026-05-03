@@ -12,12 +12,14 @@ export const RUN_BENCHMARKS = "ACT_RUN_BENCHMARKS" as const;
 export interface RunBenchmarksRequest {
     action: typeof RUN_BENCHMARKS;
     requests: Array<{ id: string; N: number }>;
+    rounds: number;
 }
 
 export function createRunBenchmarksRequest(
-    requests: Array<{ id: string; N: number }>
+    requests: Array<{ id: string; N: number }>,
+    rounds: number
 ): RunBenchmarksRequest {
-    return { action: RUN_BENCHMARKS, requests };
+    return { action: RUN_BENCHMARKS, requests, rounds };
 }
 
 export interface Envelope {

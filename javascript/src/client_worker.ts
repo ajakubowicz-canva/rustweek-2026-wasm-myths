@@ -30,8 +30,8 @@ export class WorkerApi {
         }
     }
 
-    async runBenchmarks(requests: BenchmarkRequest[]): Promise<BenchmarkResult[]> {
-        const { message, promise } = this.wrapAction(createRunBenchmarksRequest(requests));
+    async runBenchmarks(requests: BenchmarkRequest[], rounds = 50): Promise<BenchmarkResult[]> {
+        const { message, promise } = this.wrapAction(createRunBenchmarksRequest(requests, rounds));
         this.worker.postMessage(message);
         return promise as Promise<BenchmarkResult[]>;
     }

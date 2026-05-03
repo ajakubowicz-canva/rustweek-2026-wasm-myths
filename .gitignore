@@ -1,6 +1,7 @@
 /target
 /wasm_bindgen_dist
 /javascript/dist
+/javascript/generated_wasm
 /javascript/node_modules
 /book-dist
 /book-src/js

@@ -14,6 +14,7 @@ class BenchmarkGraphViewer extends LitElement {
     @property({ type: String }) accessor labels = "";
     @property({ type: String }) accessor N = "";
     @property({ type: String, attribute: "x-label" }) accessor xLabel = "N (objects)";
+    @property({ type: Number }) accessor rounds = 50;
 
     @state() private accessor results: Map<string, { N: number; duration: number }[]> | null = null;
     @state() private accessor loading = false;
@@ -63,7 +64,8 @@ class BenchmarkGraphViewer extends LitElement {
 
         for (const n of nValues) {
             const batchResults: BenchmarkResult[] = await this.worker.runBenchmarks(
-                benchIds.map(id => ({ id, N: n }))
+                benchIds.map(id => ({ id, N: n })),
+                this.rounds
             );
             for (const r of batchResults) {
                 data.get(r.id)!.push({ N: r.N, duration: r.duration });

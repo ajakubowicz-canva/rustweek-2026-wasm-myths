@@ -7,3 +7,6 @@ edition = "2024"
 
 [build]
 build-dir = "book-dist"
+
+[output.html]
+mathjax-support = true

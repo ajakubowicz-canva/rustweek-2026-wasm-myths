@@ -24,8 +24,8 @@ class BenchmarkRunner {
         this.benchmarks.set(benchmark.id, benchmark);
     }
 
-    run(requests: BenchmarkRequest[]): BenchmarkResult[] {
-        const ROUNDS = 50;
+    run(requests: BenchmarkRequest[], rounds = 50): BenchmarkResult[] {
+        const ROUNDS = rounds;
         const totals = new Map<string, number>();
 
         for (const { id } of requests) {
