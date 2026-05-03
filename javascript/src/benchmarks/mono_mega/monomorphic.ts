@@ -2,7 +2,9 @@ import { Benchmark } from "../../core/benchmark";
 import { registerBenchmark } from "../../core/runner";
 import { ObjectWithNumbers, sum_fields_mono } from "./shared";
 
+// ANCHOR: factory
 const objectWithNumbersFactory = (a: number, b: number, c: number, d: number, e: number) => ({ a, b, c, d, e });
+// ANCHOR_END: factory
 
 class Monomorphic extends Benchmark {
     id: string = "bench-monomorphic";

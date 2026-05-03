@@ -2,6 +2,7 @@ import { Benchmark } from "../../core/benchmark";
 import { ObjectWithNumbers, sum_fields_mega } from "./shared";
 import { registerBenchmark } from "../../core/runner";
 
+// ANCHOR: factories
 const objectWithNumbersFactories: Array<(a: number, b: number, c: number, d: number, e: number) => ObjectWithNumbers> = [
     (a, b, c, d, e) => ({ a, b, c, d, e }),
     (a, b, c, d, e) => ({ b, a, c, d, e }),
@@ -12,6 +13,7 @@ const objectWithNumbersFactories: Array<(a: number, b: number, c: number, d: num
     (a, b, c, d, e) => ({ b, d, a, e, c }),
     (a, b, c, d, e) => ({ e, c, a, d, b }),
 ];
+// ANCHOR_END: factories
 
 class Megamorphic extends Benchmark {
     id: string = "bench-megamorphic";

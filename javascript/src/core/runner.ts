@@ -25,7 +25,7 @@ class BenchmarkRunner {
     }
 
     run(requests: BenchmarkRequest[]): BenchmarkResult[] {
-        const ROUNDS = 10;
+        const ROUNDS = 50;
         const totals = new Map<string, number>();
 
         for (const { id } of requests) {
