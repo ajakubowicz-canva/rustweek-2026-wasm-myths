@@ -6,6 +6,7 @@ import "./benchmarks/mono_mega/monomorphic.js";
 import "./benchmarks/mono_mega/megamorphic.js";
 import "./benchmarks/identity/wasm_identity.js";
 import "./benchmarks/identity/js_identity.js";
+import "./benchmarks/identity/string_identity.js";
 
 import { type WorkerRequest, CALCULATE_SUM, RUN_BENCHMARKS, WorkerResponse } from './messages.js'
 
