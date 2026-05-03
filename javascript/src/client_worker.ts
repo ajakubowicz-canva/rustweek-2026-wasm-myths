@@ -1,4 +1,5 @@
-import { createSumRequest, Envelope, WorkerResponse } from "./messages";
+import { createSumRequest, createRunBenchmarksRequest, Envelope, WorkerResponse } from "./messages";
+import type { BenchmarkRequest, BenchmarkResult } from "./core/runner";
 import BenchmarkWorker from './worker.js?worker';
 
 export class WorkerApi {
@@ -27,6 +28,12 @@ export class WorkerApi {
             },
             promise
         }
+    }
+
+    async runBenchmarks(requests: BenchmarkRequest[]): Promise<BenchmarkResult[]> {
+        const { message, promise } = this.wrapAction(createRunBenchmarksRequest(requests));
+        this.worker.postMessage(message);
+        return promise as Promise<BenchmarkResult[]>;
     }
 
     async sum(a: number, b: number): Promise<number> {

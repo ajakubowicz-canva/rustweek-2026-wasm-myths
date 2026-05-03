@@ -1,6 +1,11 @@
 import init, { sum } from "../generated_wasm/rustweek_2026_wasm_myths.js";
+import { benchmarkRunner } from "./core/runner.js";
 
-import { type WorkerRequest, CALCULATE_SUM, WorkerResponse } from './messages.js'
+// Side effect register benchmarks
+import "./benchmarks/mono_mega/monomorphic.js";
+import "./benchmarks/mono_mega/megamorphic.js";
+
+import { type WorkerRequest, CALCULATE_SUM, RUN_BENCHMARKS, WorkerResponse } from './messages.js'
 
 declare const self: DedicatedWorkerGlobalScope;
 
@@ -12,22 +17,19 @@ const wasmReady = init().then(() => {
 
 function post(response: WorkerResponse) {
     self.postMessage(response);
-
 }
 
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     if (!wasmLoaded) {
         await wasmReady;
     }
-    const { requestId, data: { action, ...args } } = event.data;
+    const { requestId, data } = event.data;
 
-    if (action === CALCULATE_SUM) {
-        const { a, b } = args;
-        const result = sum(a, b);
-        post({
-            action: "RESULT",
-            id: requestId,
-            payload: result
-        })
+    if (data.action === CALCULATE_SUM) {
+        const result = sum(data.a, data.b);
+        post({ action: "RESULT", id: requestId, payload: result });
+    } else if (data.action === RUN_BENCHMARKS) {
+        const results = benchmarkRunner.run(data.requests);
+        post({ action: "RESULT", id: requestId, payload: results });
     }
 };

@@ -7,8 +7,21 @@ export interface CalculateSumRequest {
     b: number
 }
 
+export const RUN_BENCHMARKS = "ACT_RUN_BENCHMARKS" as const;
+
+export interface RunBenchmarksRequest {
+    action: typeof RUN_BENCHMARKS;
+    requests: Array<{ id: string; N: number }>;
+}
+
+export function createRunBenchmarksRequest(
+    requests: Array<{ id: string; N: number }>
+): RunBenchmarksRequest {
+    return { action: RUN_BENCHMARKS, requests };
+}
+
 export interface Envelope {
-    data: CalculateSumRequest;
+    data: CalculateSumRequest | RunBenchmarksRequest;
     requestId: number;
 }
 
