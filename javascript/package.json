@@ -1,0 +1,22 @@
+{
+  "name": "javascript",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "(cd .. && ./build.sh) && vite build"
+  },
+  "keywords": [],
+  "author": "Andrew Jakubowicz & Taj Pereira",
+  "packageManager": "pnpm@10.12.2",
+  "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.29.0",
+    "@rolldown/plugin-babel": "^0.2.3",
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.8"
+  },
+  "dependencies": {
+    "lit": "^3.3.2"
+  }
+}

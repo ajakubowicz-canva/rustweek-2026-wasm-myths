@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "noEmit": true,
+    "rootDir": ".",
+    "lib": [
+        "esnext", "DOM", "WebWorker"
+    ]
+  }
+}

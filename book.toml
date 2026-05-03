@@ -1,0 +1,9 @@
+[book]
+title = "RustWeek 2026"
+src = "book-src"
+
+[rust]
+edition = "2024"
+
+[build]
+build-dir = "book-dist"
