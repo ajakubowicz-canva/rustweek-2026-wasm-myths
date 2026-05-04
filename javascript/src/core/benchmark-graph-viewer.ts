@@ -21,6 +21,7 @@ class BenchmarkGraphViewer extends LitElement {
 
     private chart: Chart | null = null;
     private worker = new WorkerApi();
+    private observer: IntersectionObserver | null = null;
 
     override createRenderRoot() {
         // Block shadow DOM which is a necessary workaround for Chart.js to work easily.
@@ -29,11 +30,20 @@ class BenchmarkGraphViewer extends LitElement {
 
     override connectedCallback() {
         super.connectedCallback();
-        this.runBenchmarks();
+        this.observer = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting) {
+                this.observer!.disconnect();
+                this.observer = null;
+                this.runBenchmarks();
+            }
+        });
+        this.observer.observe(this);
     }
 
     override disconnectedCallback(): void {
         super.disconnectedCallback();
+        this.observer?.disconnect();
+        this.observer = null;
         if (this.chart) {
             this.chart.destroy();
             this.chart = null;

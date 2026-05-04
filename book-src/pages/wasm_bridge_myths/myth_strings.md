@@ -1,4 +1,4 @@
-# Myth: Wasm string overhead ruins performance.
+# Myth: Wasm string overhead ruins performance
 
 In the [previous myth](myth_ffi_fn_calls.md) we showed that calling a WebAssembly function from
 JavaScript is nearly free using an `identity` function. But, by using `JsValue` to pass the string
