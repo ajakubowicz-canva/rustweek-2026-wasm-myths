@@ -9,7 +9,7 @@ This means that JavaScript data that needs to be inspected by WebAssembly must b
 the linear memory. This fundamental truth has created some myths:
 
 1. Calling from Wasm to Js and vice-versa is expensive.
-1. Strings are expensive to pass across the Wasm bridge.
+1. Strings are expensive to pass across the Wasm bridge and ruin performance.
 1. Large complex objects are tricky to work with across the Wasm bridge.
 
 The truth is the copy cost is unavoidable. How expensive is it, and can it be avoided or mitigated?
