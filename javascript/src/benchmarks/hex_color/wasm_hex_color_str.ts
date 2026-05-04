@@ -8,13 +8,10 @@ class WasmHexColorStr extends Benchmark {
     generate(N: number): string[] {
         return Array.from({ length: N }, randomHexColor);
     }
-    run(data: string[]): unknown {
-        let acc = 0;
+    run(data: string[]): void {
         for (let i = 0; i < data.length; i++) {
             const rgb = parse_hex_color_str(data[i]);
-            acc += rgb[0] + rgb[1] + rgb[2];
         }
-        return acc;
     }
 }
 

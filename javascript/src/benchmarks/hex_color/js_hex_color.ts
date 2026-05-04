@@ -15,13 +15,10 @@ class JsHexColor extends Benchmark {
     generate(N: number): string[] {
         return Array.from({ length: N }, randomHexColor);
     }
-    run(data: string[]): unknown {
-        let acc = 0;
+    run(data: string[]): void {
         for (let i = 0; i < data.length; i++) {
-            const [r, g, b] = parseHexColor(data[i]);
-            acc += r + g + b;
+            const rgb = parseHexColor(data[i]);
         }
-        return acc;
     }
 }
 

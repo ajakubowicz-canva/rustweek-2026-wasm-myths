@@ -23,19 +23,11 @@ export function createRunBenchmarksRequest(
 }
 
 export interface Envelope {
-    data: CalculateSumRequest | RunBenchmarksRequest;
+    data: RunBenchmarksRequest;
     requestId: number;
 }
 
 export type WorkerRequest = Envelope;
-
-export function createSumRequest(a: number, b: number): CalculateSumRequest {
-    return {
-        action: CALCULATE_SUM,
-        a,
-        b
-    }
-}
 
 export interface WorkerResponse {
     action: "RESULT",
