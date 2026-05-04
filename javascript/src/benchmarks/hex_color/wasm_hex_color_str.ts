@@ -11,6 +11,7 @@ class WasmHexColorStr extends Benchmark {
     run(data: string[]): void {
         for (let i = 0; i < data.length; i++) {
             const rgb = parse_hex_color_str(data[i]);
+            if (rgb == null) throw new Error("unreachable");
         }
     }
 }

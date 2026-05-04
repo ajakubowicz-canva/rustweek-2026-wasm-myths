@@ -8,7 +8,9 @@ class WasmIdentity extends Benchmark {
         return "a".repeat(N);
     }
     run(data: string): unknown {
-        return identity(data);
+        const result = identity(data);
+        if (result == null) throw new Error("unreachable");
+        return result;
     }
 }
 

@@ -8,7 +8,9 @@ class WasmStringIdentity extends Benchmark {
         return "a".repeat(N);
     }
     run(data: string): unknown {
-        return expensive_string_identity(data);
+        const result = expensive_string_identity(data);
+        if (result == null) throw new Error("unreachable");
+        return result;
     }
 }
 

@@ -1,8 +1,8 @@
 import { Benchmark } from "../../core/benchmark";
 import { registerBenchmark } from "../../core/runner";
-import { 
-    get_hex_buffer_view, 
-    parse_hex_color_no_alloc 
+import {
+    get_hex_buffer_view,
+    parse_hex_color_no_alloc
 } from "../../../generated_wasm/rustweek_2026_wasm_myths.js";
 import { randomHexColor } from "./shared";
 
@@ -14,7 +14,7 @@ function parseHexColor(hex: string): [number, number, number] {
     }
     for (let j = 0; j < 7; j++) {
         view[j] = hex.charCodeAt(j);
-    }    
+    }
     const colorInt = parse_hex_color_no_alloc();
     return [
         (colorInt >> 16) & 255, // R
@@ -24,7 +24,7 @@ function parseHexColor(hex: string): [number, number, number] {
 }
 
 class WasmHexColorOptimized extends Benchmark {
-id: string = "bench-wasm-hex-color-no-alloc";
+    id: string = "bench-wasm-hex-color-no-alloc";
 
     generate(N: number): string[] {
         return Array.from({ length: N }, randomHexColor);
@@ -33,6 +33,7 @@ id: string = "bench-wasm-hex-color-no-alloc";
     run(data: string[]): void {
         for (let i = 0; i < data.length; i++) {
             const rgb = parseHexColor(data[i]);
+            if (rgb == null) throw new Error("unreachable");
         }
     }
 }

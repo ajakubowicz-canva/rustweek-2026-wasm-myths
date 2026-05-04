@@ -25,6 +25,7 @@ class Megamorphic extends Benchmark {
         for (let i = 0; i < data.length; i++) {
             acc += sum_fields_mega(data[i]);
         }
+        if (acc < -1e300) throw new Error("unreachable");
         return acc;
     }
 

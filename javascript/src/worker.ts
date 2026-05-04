@@ -1,5 +1,5 @@
 import init from "../generated_wasm/rustweek_2026_wasm_myths.js";
-import initSimd  from "../generated_wasm/rustweek_2026_wasm_myths_simd.js";
+import initSimd from "../generated_wasm/rustweek_2026_wasm_myths_simd.js";
 import { benchmarkRunner } from "./core/runner.js";
 
 // Side effect register benchmarks
@@ -11,6 +11,10 @@ import "./benchmarks/identity/string_identity.js";
 import "./benchmarks/hex_color/js_hex_color.js";
 import "./benchmarks/hex_color/wasm_hex_color_str.js";
 import "./benchmarks/hex_color/wasm_hex_color_str_no_alloc.js";
+import "./benchmarks/objects/js_objects.js";
+import "./benchmarks/objects/wasm_serde_full.js";
+import "./benchmarks/objects/wasm_extern_getters.js";
+import "./benchmarks/objects/wasm_js_facade.js";
 
 import { type WorkerRequest, RUN_BENCHMARKS, WorkerResponse } from './messages.js'
 
