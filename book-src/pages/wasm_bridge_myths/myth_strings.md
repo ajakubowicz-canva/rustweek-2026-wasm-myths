@@ -21,8 +21,9 @@ pub fn string_identity(val: &str) -> String {
 }
 ```
 
-This function does no real work — it just copies the input and returns it — but it forces both a
-decode and an encode across the bridge on every call.
+This second Rust function also does no real work, but because it's consuming its argument as a `&str`
+and returning it as a `String`, it must copy the JavaScript string into Wasm and decode the Wasm string
+back into JavaScript when the value is returned.
 
 <benchmark-graph-viewer
     benches="'bench-wasm-identity','bench-wasm-string-identity'"
@@ -43,28 +44,24 @@ String copying across the WebAssembly bridge is **not free**, and is instead a m
 proportional to the number of bytes. Additionally, JavaScript strings are UTF-16 whilst Rust strings
 are UTF-8. The text encoding and decoding process must also make this transcoding.
 
-## Algorithmic Complexity of string copy tax
-
-Thinking in terms of algorithmic complexity, if a JavaScript algorithm is linear over a string, the
-equivalent Wasm function is also linear — plus the linear cost of copying the string across the
-bridge. \\(O(n) + O(n)\\) is still \\(O(n)\\). **The complexity class is unchanged.**
-
-The copy raises the constant factor, not the scaling behaviour. Two strategies follow from this. If
-your algorithm only reads a *subset* of the string, copying the whole thing is wasteful. And if the
-same string is needed across multiple Wasm calls, copying it once and keeping it in Wasm memory
-amortises that cost to a one-time setup rather than a per-call overhead.
-
-But, in practice, it's more complicated than this and we can only lean on algorithmic complexity as
-a worst case measurement.
-
-## Measuring something real world
+## A real world example
 
 Because Canva works with designs and colors every day, a common but trivial task is parsing CSS
-colors that are strings into numbers that can be worked with.
+colors that are strings into their numeric representation.
 
 Thus the problem statement is, given some well-formed CSS hex color such as `#ffdd00`, extract the
-red, green, and blue channels. Thus for an input of `#ffdd00`, the expected output is `[255, 221, 0]`.
+red, green, and blue channels. So, for an input of `#ffdd00`, the expected output is `[255, 221, 0]`.
 
+> This case study has also been chosen because it reflects a seemingly worst case scenario for using
+> WebAssembly. The input is a small string that must be copied into the WebAssembly linear memory
+> (paying a wasm tax), and there is very little processing within WebAssembly to pay-off the tax.
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
 
 <benchmark-graph-viewer
     benches="'bench-js-hex-color','bench-wasm-hex-color-str'"
@@ -73,6 +70,13 @@ red, green, and blue channels. Thus for an input of `#ffdd00`, the expected outp
     x-label="# of colors parsed"
     rounds="25">
 </benchmark-graph-viewer>
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
 
 The JavaScript implementation graphed on the blue line is as follows:
 
@@ -111,10 +115,10 @@ fn hex_nibble(byte: u8) -> u8 {
 ```
 
 This benchmark is measuring the total duration for some amount of colors parsed, so it intuitively
-makes sense that the wasm + string copy tax scales at a constant factor worse than the JavaScript
-implementation. This reinforces the myth that copying strings is expensive, but can we do better?
+makes sense that the Wasm tax scales at a constant factor worse than the JavaScript implementation.
+This reinforces the myth that copying strings is expensive, but can we beat JavaScript?
 
-What is the WebAssembly implementation doing?
+Before optimising this function, what is the WebAssembly implementation doing?
 
  1. `wasm-bindgen` must allocate a slice of linear memory to copy the JavaScript string to.
  1. `wasm-bindgen` then text encodes the string into that recently allocated linear memory (with a UTF-16 to UTF-8 conversion).
@@ -122,16 +126,27 @@ What is the WebAssembly implementation doing?
  1. The vector is copied out into JavaScript.
  1. The Rust vector is freed.
 
-We can do better with a function that encodes more semantic information of our use-case. What do we know:
-1. We are running in a single threaded JavaScript environment.
-1. The function can allocate 7 bytes and re-use those bytes for the string colors that always have a length of 7.
-1. CSS hex colors consist entirely of ASCII characters, so we do not need to pay for a UTF-16 to
-   UTF-8 conversion. ASCII characters are identical between UTF-16 and UTF-8.
-1. The output of three 8 bit unsigned integers can be packed into a single 32 bit number avoiding a
-   vector allocation.
+> "If you're willing to restrict the flexibility of your approach, you can almost always do something better" ~ John Carmack
 
-With this domain information we can write a JavaScript facade wrapping our WebAssembly function that provides the
-same exact behavior but with far more favorable memory conditions.
+`wasm-bindgen` is extremely ergonomic and general, but, it doesn't know the specifics of our function.
+We can do better by leveraging problem specific invariants. We know that:
+1. We are running in a single threaded JavaScript environment.
+1. The function can pre-allocate 7 bytes and re-use those bytes for the string copy.
+1. CSS hex colors consist entirely of ASCII characters, so we do not need to pay for a UTF-16 to
+   UTF-8 conversion. ASCII characters are identical in both UTF-16 and UTF-8.
+1. The output of three 8 bit unsigned integers can be packed into a single 32 bit number avoiding a
+   vector allocation and free.
+
+With this problem specific info, we can write a third Wasm implementation of `parseHexColor` that
+has _exactly the same user visible behavior_ as the JavaScript implementation whilst avoiding the
+memory allocations.
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
 
 <benchmark-graph-viewer
     benches="'bench-js-hex-color','bench-wasm-hex-color-str','bench-wasm-hex-color-no-alloc'"
@@ -141,9 +156,17 @@ same exact behavior but with far more favorable memory conditions.
     rounds="20">
 </benchmark-graph-viewer>
 
-Now we are approximately 40% faster than the JavaScript implementation.
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
 
-Let's take a look at the new much faster code.
+On my laptop running Chrome, the near-zero allocation variant of the Wasm color parsing function is
+almost twice as fast as the JavaScript implementation whilst still paying a string copy wasm tax.
+
+Lets take a look at how this has been done.
 
 ```rs
 thread_local! {
@@ -171,14 +194,14 @@ pub fn parse_hex_color_no_alloc() -> u32 {
 }
 ```
 
-The Rust code has two large changes that impact the input and output of the `parse_hex_color_no_alloc`
-function. First, the input is gone. Instead of passing the input and relying on `wasm-bindgen` to
-implement all of the allocations and copying, we can more finely control this behavior by
-preallocating a 7 byte array. JavaScript can then copy the string into this stable location in linear memory
-and that avoids a memory allocation with the string copy.
+The Rust code has two large changes that impact the input and output of the
+`parse_hex_color_no_alloc` function. First, the input argument is gone. Instead of directly passing
+an input and relying on `wasm-bindgen` to implement all of the allocations and copying, we can more
+finely control this behavior by preallocating a 7 byte array. JavaScript can then copy the string
+into this stable location in linear memory avoiding a memory allocation with the string copy.
 
 Additionally, by packing the returned RGB values into a number, we can avoid the allocation and free
-cost of a vector.
+cost of a returned vector.
 
 ```js
 import { 
@@ -204,18 +227,25 @@ function parseHexColor(hex) {
 }
 ```
 
-This JavaScript facade function ensures the more complicated logic has a nice public API. This
-function still takes in a hex string and returns a three value array of RGB numbers. The internals
-now take a stable view of the linear memory and directly copy the hex string using `charCodeAt`
-which skips the `UTF-16` to `UTF-8` conversion. The returned RGB number is also unpacked into a
-JavaScript array.
+This more complex Rust implementation can be paired with a JavaScript facade function that allows
+the public `parseHexColor` API to remain unchanged. This function still takes in a hex string and
+returns an array of three RGB numbers.
 
-At this point we're truly paying exclusively the wasm tax of copying a string into the WebAssembly
-linear memory, and we can outperform JavaScript significantly. This is a lot of work to beat
-JavaScript, however, our Rust function is barely doing any computation – the actual point of opting
-into WebAssembly.
+The internals now take a stable view of the linear memory and directly copy the hex string using
+`charCodeAt` skipping the `UTF-16` to `UTF-8` conversion. The returned RGB number is also unpacked
+into a JavaScript array.
 
-The takeaway is that there is a wasm tax to copy data into WebAssembly, but just copying bytes onto
-a linear array is not that expensive. The expense builds up from copying paired with many
-allocations and deallocations.
+<br/>
+<br/>
+<hr>
+<br/>
+<br/>
 
+From doing this exercise I hope I've convinced you that it is possible to **both** pay the Wasm data
+copy tax and outperform JavaScript, for a small WebAssembly function while preserving the
+user-facing public API.
+
+The high level takeaway here is that `wasm-bindgen` facilitates very high level interactions between
+Wasm and JavaScript, but pays a performance penalty for its flexibility. By trading the ergonomic
+abstraction for specific and intentional memory management, we can completely avoid the majority of
+the Wasm tax and outperform JavaScript even on small functions.
