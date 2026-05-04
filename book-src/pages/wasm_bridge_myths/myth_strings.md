@@ -63,8 +63,8 @@ the red, green, and blue byte values.
 TODO: describe END TODO
 
 <benchmark-graph-viewer
-    benches="'bench-js-hex-color','bench-wasm-hex-color-str','bench-wasm-hex-color-jsvalue'"
-    labels="'JS (parseInt)','Wasm &str (TextEncoder cost)','Wasm JsValue (char_code_at)'"
+    benches="'bench-js-hex-color','bench-wasm-hex-color-str'"
+    labels="'JS (parseInt)','Wasm &str (TextEncoder cost)'"
     N="100,500,1000,5000,10000,50000,100000"
     x-label="# of colors parsed"
     rounds="50">

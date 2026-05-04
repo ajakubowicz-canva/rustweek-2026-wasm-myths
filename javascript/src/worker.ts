@@ -9,7 +9,6 @@ import "./benchmarks/identity/js_identity.js";
 import "./benchmarks/identity/string_identity.js";
 import "./benchmarks/hex_color/js_hex_color.js";
 import "./benchmarks/hex_color/wasm_hex_color_str.js";
-import "./benchmarks/hex_color/wasm_hex_color_jsvalue.js";
 
 import { type WorkerRequest, CALCULATE_SUM, RUN_BENCHMARKS, WorkerResponse } from './messages.js'
 
