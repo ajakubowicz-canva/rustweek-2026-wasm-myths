@@ -6,3 +6,7 @@
     - [Myth: Calls crossing the Wasm Bridge are expensive](./pages/wasm_bridge_myths/myth_ffi_fn_calls.md)
     - [Myth: Wasm string overhead ruins performance.](./pages/wasm_bridge_myths/myth_strings.md)
     - [Myth: Working with objects in WebAssembly is expensive](./pages/wasm_bridge_myths/myth_objects.md)
+
+# Appendix
+
+- [GC jitter: how JS GC breaks predictable performance](./pages/appendix/wasm_gc_jitter.md)
