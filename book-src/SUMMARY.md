@@ -10,3 +10,5 @@
 # Appendix
 
 - [GC jitter: how JS GC breaks predictable performance](./pages/appendix/wasm_gc_jitter.md)
+- [Wasm SIMD: a primitive JavaScript doesn't have](./pages/appendix/wasm_simd_speedup.md)
+- [Wasm threading: parallel without paying postMessage](./pages/appendix/wasm_threading.md)

@@ -16,8 +16,14 @@ trap restore_head EXIT
 # Build JS with the GitHub Pages base path
 (cd javascript && npx vite build --base "${REPO_PATH}/js/")
 
-# Patch head.hbs for the deploy path, build, then restore
-sed -i.bak "s|src=\"/js/|src=\"${REPO_PATH}/js/|g" "$HEAD_HBS"
+# Patch head.hbs for the deploy path, build, then restore. Two
+# rewrites: the `/js/*` Vite assets (existing), and the
+# `/coi-serviceworker.js` service-worker shim that has to live at the
+# deploy root so its SW scope covers every appendix page.
+sed -i.bak \
+  -e "s|src=\"/js/|src=\"${REPO_PATH}/js/|g" \
+  -e "s|src=\"/coi-serviceworker.js\"|src=\"${REPO_PATH}/coi-serviceworker.js\"|g" \
+  "$HEAD_HBS"
 mdbook build --dest-dir book-dist
 mv "$HEAD_HBS.bak" "$HEAD_HBS"
 

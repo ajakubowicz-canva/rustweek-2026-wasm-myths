@@ -10,8 +10,16 @@ crate-type = ["cdylib"]
 lto = true
 opt-level = 3
 
+[features]
+# Enabled only for the third Wasm artefact (`rustweek_2026_wasm_myths_threads`)
+# built with `RUSTFLAGS="-C target-feature=+atomics,+bulk-memory"` and
+# `-Z build-std=panic_abort,std` on nightly. See `build.sh`.
+threads = ["dep:rayon", "dep:wasm-bindgen-rayon"]
+
 [dependencies]
 wasm-bindgen = "0.2.120"
 js-sys = "0.3"
 serde = { version = "1", features = ["derive"] }
 serde-wasm-bindgen = "0.6"
+rayon = { version = "1.10", optional = true }
+wasm-bindgen-rayon = { version = "1.3", optional = true }

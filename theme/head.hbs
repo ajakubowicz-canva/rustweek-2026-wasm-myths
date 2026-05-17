@@ -1,3 +1,12 @@
 
+{{!-- COOP/COEP service-worker shim. Has to load before /js/main.js so
+     the Wasm-threading appendix can use SharedArrayBuffer. The script
+     lives at the deploy root (not under /js/) because a Service Worker's
+     scope is the directory of its script, and we need the scope to
+     cover every page that might host the threading viewer, not just
+     /js/* asset requests. `deploy.sh` rewrites the leading `/` for
+     GitHub Pages's repo-name subpath. --}}
+<script src="/coi-serviceworker.js"></script>
+
 {{!-- Load the JavaScript and WebAssembly --}}
 <script type="module" src="/js/main.js"></script>
