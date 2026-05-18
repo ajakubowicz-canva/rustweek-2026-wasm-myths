@@ -15,6 +15,9 @@ import "./benchmarks/objects/js_objects.js";
 import "./benchmarks/objects/wasm_serde_full.js";
 import "./benchmarks/objects/wasm_extern_getters.js";
 import "./benchmarks/objects/wasm_js_facade.js";
+import "./benchmarks/simd/js_dot_product.js";
+import "./benchmarks/simd/wasm_scalar_dot_product.js";
+import "./benchmarks/simd/wasm_simd_dot_product.js";
 
 import { type WorkerRequest, RUN_BENCHMARKS, WorkerResponse } from './messages.js'
 

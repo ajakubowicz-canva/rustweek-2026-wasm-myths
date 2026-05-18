@@ -1,5 +1,6 @@
 /target
 /target_simd
+/target_threads
 /wasm_bindgen_dist
 /javascript/dist
 /javascript/generated_wasm
