@@ -1,0 +1,1 @@
+(function(){self.onmessage=e=>{let{requestId:t,a:n,x:r,y:i,output:a}=e.data,o=r.length;for(let e=0;e<o;e++)a[e]=n*r[e]+i[e];let s={requestId:t,x:r,y:i,output:a};self.postMessage(s,[r.buffer,i.buffer,a.buffer])}})();

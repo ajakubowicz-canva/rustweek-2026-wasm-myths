@@ -1,0 +1,949 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>RustWeek 2026</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+        <script type="module" src="/rustweek-2026-wasm-myths/js/main.js"></script>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-22f7667a.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-91979b11.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">RustWeek 2026</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="why-webassembly-on-the-browser"><a class="header" href="#why-webassembly-on-the-browser">Why WebAssembly on the browser?</a></h1>
+<blockquote>
+<p>“Is WebAssembly magic performance pixie dust? …. The incredibly unsatisfying answer is: It
+depends.” ~ <a href="https://surma.dev/things/js-to-asc/">Surma</a></p>
+</blockquote>
+<p>Although JavaScript can be written to be extremely fast, it’s non trivial to squeeze performance out
+of it. Often it requires writing the JavaScript like C code, and you still need to be extremely
+aware of performance cliffs that exist in the underlying JavaScript interpreters.</p>
+<p>This book comes with a built-in benchmark runner so we can test directly in your browser. Because it
+runs on your specific hardware and browser engine, your results will be unique. If the data looks
+noisy, hit the <code>↺ Restart</code> button.</p>
+<p>To test out the benchmark system in pure JavaScript, let’s explicitly measure the performance degradation
+of function deoptimisation.</p>
+<p>Although JavaScript is dynamically typed, object literals are still assigned a hidden class. So,
+declaring <code>{a: 1, b: 2}</code> in JavaScript gets a different hidden class from the object <code>{b: 2, a: 1}</code>
+even though the objects are otherwise identical. If a function is called with different hidden class
+arguments, it can deoptimise and become much slower to call.</p>
+<p>Given this trivial function that sums some fields on a JavaScript object:</p>
+<pre><code class="language-javascript">function sum_fields(obj) {
+    return obj.a + obj.b + obj.c + obj.d + obj.e;
+}
+</code></pre>
+<p>We can benchmark and compare the speed of the function based on simply what input objects are generated
+for the benchmark.</p>
+<p>The <strong>monomorphic</strong> benchmark creates input data using a single factory — one shape, one hidden class, function is expected on the fast path:</p>
+<pre><code class="language-typescript">const objectWithNumbersFactory = (a: number, b: number, c: number, d: number, e: number) =&gt; ({ a, b, c, d, e });
+</code></pre>
+<p>The <strong>megamorphic</strong> benchmark generates input data by randomly choosing from one of eight factories.
+Each factory generates the object literal with fields in different orders causing the function to
+deoptimise.</p>
+<pre><code class="language-typescript">const objectWithNumbersFactories: Array&lt;(a: number, b: number, c: number, d: number, e: number) =&gt; ObjectWithNumbers&gt; = [
+    (a, b, c, d, e) =&gt; ({ a, b, c, d, e }),
+    (a, b, c, d, e) =&gt; ({ b, a, c, d, e }),
+    (a, b, c, d, e) =&gt; ({ c, b, a, d, e }),
+    (a, b, c, d, e) =&gt; ({ d, c, b, a, e }),
+    (a, b, c, d, e) =&gt; ({ e, d, c, b, a }),
+    (a, b, c, d, e) =&gt; ({ a, c, e, b, d }),
+    (a, b, c, d, e) =&gt; ({ b, d, a, e, c }),
+    (a, b, c, d, e) =&gt; ({ e, c, a, d, b }),
+];
+</code></pre>
+<p>The graph below is calculated on your machine so may show slightly different results on each try.</p>
+<p><benchmark-graph-viewer benches="&#39;bench-monomorphic&#39;,&#39;bench-megamorphic&#39;" labels="&#39;Monomorphic input&#39;,&#39;Megamorphic input&#39;" n="10,100,1000,10000,30000,50000,80000,100000" x-label="# of objects generated">
+</benchmark-graph-viewer></p>
+<p>The graph above shows that the inputs into otherwise identical functions can have huge impact on the
+performance of the function. In the worst case the megamorphic benchmark can be 10 times slower. In
+fact, these optimisations were specifically used to improve <a href="https://github.com/microsoft/TypeScript/pull/51880">TypeScript’s compiler
+performance</a>.</p>
+<p>Unlike JavaScript, which contains these complex runtime behaviors and heuristics, WebAssembly is
+statically typed and compiled ahead of time. This allows WebAssembly to achieve its design goal of
+deterministic high performance.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="webassembly-to-javascript-bridge-myths"><a class="header" href="#webassembly-to-javascript-bridge-myths">WebAssembly to JavaScript Bridge Myths</a></h1>
+<p>WebAssembly is designed to interoperate with the existing web ecosystem, but also embed in external
+systems outside the browser. Thus, WebAssembly does not natively operate directly on JavaScript data
+structures but instead operates on numbers passed into Wasm functions, or on its shared linear
+memory.</p>
+<p>This means that JavaScript data that needs to be inspected by WebAssembly must be first copied into
+the linear memory. This fundamental truth has created some myths:</p>
+<ol>
+<li>Calling from Wasm to Js and vice-versa is expensive.</li>
+<li>Strings are expensive to pass across the Wasm bridge and ruin performance.</li>
+<li>Large complex objects are tricky to work with across the Wasm bridge.</li>
+</ol>
+<p>The truth is the copy cost is unavoidable. How expensive is it, and can it be avoided or mitigated?</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="myth-calling-from-javascript-to-webassembly-and-vice-versa-is-expensive"><a class="header" href="#myth-calling-from-javascript-to-webassembly-and-vice-versa-is-expensive">Myth: Calling from JavaScript to WebAssembly and vice-versa is expensive</a></h1>
+<p>Every call to a WebAssembly function crosses the FFI boundary, does that add up as measurable overhead?</p>
+<p>We can compare an <code>identity</code> function implemented in JavaScript directly against a Rust <code>identity</code>
+function.</p>
+<p>The <strong>JavaScript identity</strong> never leaves JavaScript:</p>
+<pre><code class="language-typescript">function identity(val: unknown): unknown {
+    return val;
+}
+</code></pre>
+<p>The <strong>WebAssembly identity</strong> crosses the bridge on every call:</p>
+<pre class="playground"><code class="language-rust edition2024"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[wasm_bindgen]
+pub fn identity(val: JsValue) -&gt; JsValue {
+    val
+}
+<span class="boring">}</span></code></pre>
+<p>Both benchmarks receive a pre-generated string of length \(N\) and call their respective identity function once. Generation is unmeasured.</p>
+<p><benchmark-graph-viewer benches="&#39;bench-js-identity&#39;,&#39;bench-wasm-identity&#39;" labels="&#39;JS identity&#39;,&#39;Wasm identity&#39;" n="10000,100000,250000,500000,750000,1000000" x-label="String length (chars)" rounds="10000">
+</benchmark-graph-viewer></p>
+<p>Results for this benchmark are extremely noisy because in both cases the computation is almost
+instant regardless of the length of the generated string being passed in.</p>
+<blockquote>
+<p>Did you notice that we are passing a generated string through WebAssembly using a <code>JsValue</code> type?
+This type allows <code>wasm-bindgen</code> to pass a lightweight reference to the JavaScript string and
+entirely skip copying the JavaScript string into WebAssembly’s linear memory.</p>
+</blockquote>
+<p>However, we don’t need many benchmarks to prove that WebAssembly functions are extremely optimised.
+All the way back in 2018, one year before WebAssembly was made the fourth language of the Web, <a href="https://hacks.mozilla.org/2018/10/calls-between-javascript-and-webassembly-are-finally-fast-%F0%9F%8E%89/">calls
+between JavaScript and WebAssembly became fast</a>.</p>
+<p>In the more recent times JavaScript engines are continuously adding optimisations to WebAssembly,
+for example V8, the JavaScript engine running in Chrome can speculatively inline all WebAssembly
+function call instructions, e.g. <code>call</code>, <code>call_indirect</code>, and <code>call_ref</code>.</p>
+<p>Thus we can safely say, myth busted!</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="myth-wasm-string-overhead-ruins-performance"><a class="header" href="#myth-wasm-string-overhead-ruins-performance">Myth: Wasm string overhead ruins performance</a></h1>
+<p>In the <a href="#myth-calling-from-javascript-to-webassembly-and-vice-versa-is-expensive">previous myth</a> we showed that calling a WebAssembly function from
+JavaScript is nearly free using an <code>identity</code> function. But, by using <code>JsValue</code> to pass the string
+through Wasm we cannot inspect the contents of the string.</p>
+<pre class="playground"><code class="language-rust edition2024"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[wasm_bindgen]
+pub fn identity(val: JsValue) -&gt; JsValue {
+    val
+}
+<span class="boring">}</span></code></pre>
+<p><code>JsValue</code> is a lightweight handle to the JavaScript value, thus function execution time is constant
+regardless of the string length.</p>
+<pre class="playground"><code class="language-rust edition2024"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[wasm_bindgen]
+pub fn string_identity(val: &amp;str) -&gt; String {
+    val.to_owned()
+}
+<span class="boring">}</span></code></pre>
+<p>This second Rust function also does no real work, but because it’s consuming its argument as a <code>&amp;str</code>
+and returning it as a <code>String</code>, it must copy the JavaScript string into Wasm and decode the Wasm string
+back into JavaScript when the value is returned.</p>
+<p><benchmark-graph-viewer benches="&#39;bench-wasm-identity&#39;,&#39;bench-wasm-string-identity&#39;" labels="&#39;Wasm identity (JsValue → JsValue)&#39;,&#39;Wasm string copy identity (&amp;str → String)&#39;" n="10000,100000,250000,500000,750000,1000000" x-label="String length (chars)" rounds="10">
+</benchmark-graph-viewer></p>
+<p>Unsurprisingly, the duration of the <code>JsValue → JsValue</code> identity remains flat regardless of string size input.
+There is nothing to copy, so string length doesn’t matter.</p>
+<p>The <code>&amp;str → String</code> identity scales linearly with string length: every additional character costs
+additional encode and decode work.</p>
+<p>String copying across the WebAssembly bridge is <strong>not free</strong>, and is instead a memory copy
+proportional to the number of bytes. Additionally, JavaScript strings are UTF-16 whilst Rust strings
+are UTF-8. The text encoding and decoding process must also make this transcoding.</p>
+<h2 id="a-real-world-example"><a class="header" href="#a-real-world-example">A real world example</a></h2>
+<p>Because Canva works with designs and colors every day, a common but trivial task is parsing CSS
+colors that are strings into their numeric representation.</p>
+<p>Thus the problem statement is, given some well-formed CSS hex color such as <code>#ffdd00</code>, extract the
+red, green, and blue channels. So, for an input of <code>#ffdd00</code>, the expected output is <code>[255, 221, 0]</code>.</p>
+<blockquote>
+<p>This case study has also been chosen because it reflects a seemingly worst case scenario for using
+WebAssembly. The input is a small string that must be copied into the WebAssembly linear memory
+(paying a wasm tax), and there is very little processing within WebAssembly to pay-off the tax.</p>
+</blockquote>
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<p><benchmark-graph-viewer benches="&#39;bench-js-hex-color&#39;,&#39;bench-wasm-hex-color-str&#39;" labels="&#39;JavaScript (parseInt)&#39;,&#39;Wasm &amp;str (TextEncoder + allocation cost)&#39;" n="1000,3000,7000,10000" x-label="# of colors parsed" rounds="25">
+</benchmark-graph-viewer></p>
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<p>The JavaScript implementation graphed on the blue line is as follows:</p>
+<pre><code class="language-javascript">function parseHexColor(hex) {
+    return [
+        parseInt(hex.slice(1, 3), 16),
+        parseInt(hex.slice(3, 5), 16),
+        parseInt(hex.slice(5, 7), 16),
+    ];
+}
+</code></pre>
+<p>And a sensible Rust implementation graphed on the orange line is implemented as:</p>
+<pre><code class="language-rs">#[wasm_bindgen]
+pub fn parse_hex_color_str(hex: &amp;str) -&gt; Vec&lt;u8&gt; {
+    let b = hex.as_bytes();
+    vec![
+        (hex_nibble(b[1]) &lt;&lt; 4) | hex_nibble(b[2]),
+        (hex_nibble(b[3]) &lt;&lt; 4) | hex_nibble(b[4]),
+        (hex_nibble(b[5]) &lt;&lt; 4) | hex_nibble(b[6]),
+    ]
+}
+
+#[inline(always)]
+fn hex_nibble(byte: u8) -&gt; u8 {
+    match byte {
+        b'0'..=b'9' =&gt; byte - b'0',
+        b'A'..=b'F' =&gt; byte - b'A' + 10,
+        b'a'..=b'f' =&gt; byte - b'a' + 10,
+        _ =&gt; 0,
+    }
+}
+</code></pre>
+<p>This benchmark is measuring the total duration for some amount of colors parsed, so it intuitively
+makes sense that the Wasm tax scales at a constant factor worse than the JavaScript implementation.
+This reinforces the myth that copying strings is expensive, but can we beat JavaScript?</p>
+<p>Before optimising this function, what is the WebAssembly implementation doing?</p>
+<ol>
+<li><code>wasm-bindgen</code> must allocate a slice of linear memory to copy the JavaScript string to.</li>
+<li><code>wasm-bindgen</code> then text encodes the string into that recently allocated linear memory (with a UTF-16 to UTF-8 conversion).</li>
+<li>Our function <code>parse_hex_color_str</code> is called which allocates a Rust vector.</li>
+<li>The vector is copied out into JavaScript.</li>
+<li>The Rust vector is freed.</li>
+</ol>
+<blockquote>
+<p>“If you’re willing to restrict the flexibility of your approach, you can almost always do something better” ~ John Carmack</p>
+</blockquote>
+<p><code>wasm-bindgen</code> is extremely ergonomic and general, but, it doesn’t know the specifics of our function.
+We can do better by leveraging problem specific invariants. We know that:</p>
+<ol>
+<li>We are running in a single threaded JavaScript environment.</li>
+<li>The function can pre-allocate 7 bytes and re-use those bytes for the string copy.</li>
+<li>CSS hex colors consist entirely of ASCII characters, so we do not need to pay for a UTF-16 to
+UTF-8 conversion. ASCII characters are identical in both UTF-16 and UTF-8.</li>
+<li>The output of three 8 bit unsigned integers can be packed into a single 32 bit number avoiding a
+vector allocation and free.</li>
+</ol>
+<p>With this problem specific info, we can write a third Wasm implementation of <code>parseHexColor</code> that
+has <em>exactly the same user visible behavior</em> as the JavaScript implementation whilst avoiding the
+memory allocations.</p>
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<p><benchmark-graph-viewer benches="&#39;bench-js-hex-color&#39;,&#39;bench-wasm-hex-color-str&#39;,&#39;bench-wasm-hex-color-no-alloc&#39;" labels="&#39;JavaScript (parseInt)&#39;,&#39;Wasm &amp;str (TextEncoder cost)&#39;,&#39;Wasm (JS facade to reduce allocations)&#39;" n="1000,2500,5000,7500,10000,12500,15000" x-label="# of colors parsed" rounds="20">
+</benchmark-graph-viewer></p>
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<p>On my laptop running Chrome, the near-zero allocation variant of the Wasm color parsing function is
+almost twice as fast as the JavaScript implementation whilst still paying a string copy wasm tax.</p>
+<p>Lets take a look at how this has been done.</p>
+<pre><code class="language-rs">thread_local! {
+    static HEX_STRING_BUF: RefCell&lt;[u8; 7]&gt; = const { RefCell::new([0; 7]) };
+}
+
+#[wasm_bindgen]
+pub fn get_hex_buffer_view() -&gt; Uint8Array {
+    let ptr = HEX_STRING_BUF.with(|buf| buf.as_ptr() as u32);
+    let memory: WebAssembly::Memory = wasm_bindgen::memory().unchecked_into();
+    Uint8Array::new_with_byte_offset_and_length(&amp;memory.buffer(), ptr, 7)
+}
+
+#[wasm_bindgen]
+pub fn parse_hex_color_no_alloc() -&gt; u32 {
+    HEX_STRING_BUF.with(|buf| {
+        let b = buf.borrow();
+
+        let r = ((hex_nibble(b[1]) &lt;&lt; 4) | hex_nibble(b[2])) as u32;
+        let g = ((hex_nibble(b[3]) &lt;&lt; 4) | hex_nibble(b[4])) as u32;
+        let b_val = ((hex_nibble(b[5]) &lt;&lt; 4) | hex_nibble(b[6])) as u32;
+
+        (r &lt;&lt; 16) | (g &lt;&lt; 8) | b_val
+    })
+}
+</code></pre>
+<p>The Rust code has two large changes that impact the input and output of the
+<code>parse_hex_color_no_alloc</code> function. First, the input argument is gone. Instead of directly passing
+an input and relying on <code>wasm-bindgen</code> to implement all of the allocations and copying, we can more
+finely control this behavior by preallocating a 7 byte array. JavaScript can then copy the string
+into this stable location in linear memory avoiding a memory allocation with the string copy.</p>
+<p>Additionally, by packing the returned RGB values into a number, we can avoid the allocation and free
+cost of a returned vector.</p>
+<pre><code class="language-js">import { 
+    get_hex_buffer_view, 
+    parse_hex_color_no_alloc 
+} from "../../../generated_wasm/rustweek_2026_wasm_myths.js";
+
+let view = undefined;
+function parseHexColor(hex) {
+    // Safety: refresh the view if Wasm memory grew so prior memory is detached.
+    if (view === undefined || view.byteLength === 0) {
+        view = get_hex_buffer_view();
+    }
+    for (let j = 0; j &lt; 7; j++) {
+        view[j] = hex.charCodeAt(j);
+    }    
+    const colorInt = parse_hex_color_no_alloc();
+    return [
+        (colorInt &gt;&gt; 16) &amp; 255, // R
+        (colorInt &gt;&gt; 8) &amp; 255,  // G
+        colorInt &amp; 255          // B
+    ];
+}
+</code></pre>
+<p>This more complex Rust implementation can be paired with a JavaScript facade function that allows
+the public <code>parseHexColor</code> API to remain unchanged. This function still takes in a hex string and
+returns an array of three RGB numbers.</p>
+<p>The internals now take a stable view of the linear memory and directly copy the hex string using
+<code>charCodeAt</code> skipping the <code>UTF-16</code> to <code>UTF-8</code> conversion. The returned RGB number is also unpacked
+into a JavaScript array.</p>
+<br />
+<br />
+<hr>
+<br />
+<br />
+<p>From doing this exercise I hope I’ve convinced you that it is possible to <strong>both</strong> pay the Wasm data
+copy tax and outperform JavaScript, for a small WebAssembly function while preserving the
+user-facing public API.</p>
+<p>The high level takeaway here is that <code>wasm-bindgen</code> facilitates very high level interactions between
+Wasm and JavaScript, but pays a performance penalty for its flexibility. By trading the ergonomic
+abstraction for specific and intentional memory management, we can completely avoid the majority of
+the Wasm tax and outperform JavaScript even on small functions.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="myth-working-with-objects-in-webassembly-is-expensive"><a class="header" href="#myth-working-with-objects-in-webassembly-is-expensive">Myth: Working with objects in WebAssembly is expensive</a></h1>
+<p>This myth is a natural extension of the myth that <a href="#myth-wasm-string-overhead-ruins-performance">strings are expensive</a>.
+Objects must also navigate the wasm tax of having their data be copied into WebAssembly linear
+memory. The additional complexity is that there are extra crates available such as
+<code>serde_wasm_bindgen</code> that can further assist with copying JavaScript objects into Rust, and
+vice-versa.</p>
+<p>The mental model for achieving performance remains exactly the same as strings. Performance is achieved by reducing the amount of data copied, and the amount of memory allocations. For
+the object myth I think it’s instructive to jump straight into a benchmarked case study.</p>
+<h2 id="case-study"><a class="header" href="#case-study">Case Study</a></h2>
+<p>The JavaScript function we will be benchmarking against is the following:</p>
+<pre><code class="language-javascript">function sum_object_a_b(obj) {
+    return obj.a + obj.b
+}
+
+// Usage example:
+sum_object_a_b({a: 6, b: 7}) // returns 13
+</code></pre>
+<p>However, JavaScript is a dynamically typed language. Although the <code>sum_object_a_b</code> function expects
+the fields <code>a</code> and <code>b</code>, additional fields may also be present and are ignored. The objects generated
+for benchmarking contain an additional <code>id</code> field containing a 10,000 length random string.</p>
+<p>Thus an example input ends up looking like:</p>
+<pre><code class="language-javascript">sum_object_a_b({
+    id: 'aaaaaaaaaaaa[... 1,000 length string truncated]',
+    a: 6,
+    b: 7
+}) // returns 13
+</code></pre>
+<p>Instead of benchmarking the variants up top and then explaining them, below are three different
+WebAssembly implementations. As I introduce each one try and guess how it compares to the JavaScript
+implementation given the input data.</p>
+<h3 id="a-pass-object-argument-with-serde_wasm_bindgen-crate"><a class="header" href="#a-pass-object-argument-with-serde_wasm_bindgen-crate">A: Pass object argument with <code>serde_wasm_bindgen</code> crate</a></h3>
+<pre class="playground"><code class="language-rust edition2024"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Deserialize)]
+struct SumABData {
+    a: f64,
+    b: f64,
+}
+
+#[wasm_bindgen]
+pub fn sum_ab_serde(val: JsValue) -&gt; f64 {
+    let obj: SumABData = serde_wasm_bindgen::from_value(val).unwrap();
+    obj.a + obj.b
+}
+<span class="boring">}</span></code></pre>
+<p>The <code>serde_wasm_bindgen</code> crate provides an incredibly ergonomic, “Rust-native” developer experience.
+You define a strongly typed struct, and the library handles the translation.</p>
+<p>This abstraction comes with a cost as the WebAssembly module must dynamically inspect the JavaScript
+object across the Wasm and JavaScript boundary, handle type checking, and allocate a new Rust
+struct.</p>
+<h3 id="b-use-wasm_bindgen-structural-access-to-object-fields"><a class="header" href="#b-use-wasm_bindgen-structural-access-to-object-fields">B: Use <code>wasm_bindgen</code> structural access to object fields</a></h3>
+<pre class="playground"><code class="language-rust edition2024"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[wasm_bindgen]
+extern "C" {
+    pub type SumABObj;
+    #[wasm_bindgen(method, getter)]
+    pub fn a(this: &amp;SumABObj) -&gt; f64;
+    #[wasm_bindgen(method, getter)]
+    pub fn b(this: &amp;SumABObj) -&gt; f64;
+}
+
+#[wasm_bindgen]
+pub fn sum_ab_structural(obj: &amp;SumABObj) -&gt; f64 {
+    obj.a() + obj.b()
+}
+<span class="boring">}</span></code></pre>
+<p>Using <code>wasm-bindgen</code> directly, we can annotate an <code>extern "C"</code> type directly with the getters we
+expect to be present. This allows <code>SumABObj</code> to have fields <code>a</code> and <code>b</code> directly accessed.
+<code>wasm-bindgen</code> generates these getters for us whilst also avoiding copying the object and allocating
+a new struct.</p>
+<h3 id="c-use-a-javascript-facade-to-destructure-the-object-and-pass-through-the-fields-directly"><a class="header" href="#c-use-a-javascript-facade-to-destructure-the-object-and-pass-through-the-fields-directly">C: Use a JavaScript facade to destructure the object and pass through the fields directly</a></h3>
+<pre><code class="language-javascript">import { sum } from "../../../generated_wasm/rustweek_2026_wasm_myths.js";
+
+function sum_object_facade(obj: BenchObj): number {
+    return sum(obj.a, obj.b)
+}
+</code></pre>
+<p>Where <code>sum</code> is defined as:</p>
+<pre class="playground"><code class="language-rust edition2024"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[wasm_bindgen]
+pub fn sum(a: f64, b: f64) -&gt; f64 {
+    a + b
+}
+<span class="boring">}</span></code></pre>
+<p>This approach applies a similar optimisation strategy as used in the CSS hex color example. Rely on
+the host environment for its heavily optimised property access, and then directly pass the <code>a</code> and
+<code>b</code> values directly into the wasm function we avoid all objects.</p>
+<p>This option ends up very performant but it’s not always viable for deeply nested or highly complex
+objects.</p>
+<p><benchmark-graph-viewer benches="&#39;bench-js-objects&#39;,&#39;bench-wasm-objects-serde&#39;,&#39;bench-wasm-objects-extern-getters&#39;,&#39;bench-wasm-objects-js-facade&#39;" labels="&#39;JavaScript control&#39;,&#39;A: Wasm serde (object deserialization)&#39;,&#39;B: Wasm extern getters&#39;,&#39;C: JS facade&#39;" n="2500,5000,7500,10000,15000,20000" x-label="# of objects" rounds="30">
+</benchmark-graph-viewer></p>
+<p>So, are objects expensive to work with in WebAssembly? It entirely depends on how you handle them.</p>
+<p>If you attempt to generically deserialize objects using <code>serde_wasm_bindgen</code> on a hot path, the
+overhead will definitely ruin your performance. The tax is too high. On my machine
+<code>serde_wasm_bindgen</code> runs about six times slower than <code>B: structural access</code>.</p>
+<p>Option <code>B</code> initially made me concerned about the multiple function calls and performance degradation
+caused when calling the wasm_bindgen generated getters. I actually went to an open source Rust
+library where I know there is a lot of web_sys and I essentially pulled JavaScript out of the Rust
+similar to <code>C</code> the facade pattern. But – this ends up being a micro optimisation so small that I
+couldn’t achieve any measurable difference.</p>
+<p>Thus I think <code>B</code> is acceptable for the vast majority of application code where developer ergonomics and
+maintainability are the primary goals.</p>
+<h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
+<p>It’s critical to keep in mind exactly what these benchmarks are measuring. <strong>Pure wasm tax overhead</strong>.</p>
+<p>In the objects case study, the Wasm functions do almost zero actual work. We’re only adding two
+numbers together. This means measurements are heavily skewed to show only the fee of crossing the
+JavaScript to WebAssembly bridge, without reaping any of the WebAssembly rewards.</p>
+<p>As shown by the CSS string color parsing examples, it doesn’t take much computation for WebAssembly
+to pay off the wasm tax. The wasm tax is real, but, provided you consider your data access patterns,
+it is a small entry fee to a much faster, and much more predictable execution environment.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="webassembly-performance"><a class="header" href="#webassembly-performance">WebAssembly Performance</a></h1>
+<p>This section outlines some areas where Wasm+Rust outperforms JavaScript.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="gc-jitter-how-js-gc-breaks-predictable-performance"><a class="header" href="#gc-jitter-how-js-gc-breaks-predictable-performance">GC jitter: how JS GC breaks predictable performance</a></h1>
+<p>This section shows how JavaScript’s garbage collection can negatively impact predictable performance.</p>
+<h2 id="the-workload"><a class="header" href="#the-workload">The workload</a></h2>
+<p>A deeply nested, pointer-heavy graph that tries to emulate some real world application state that is used to, per call:</p>
+<ul>
+<li>Build the tree.</li>
+<li>Sum every node’s value via a recursive walk.</li>
+<li>Push the resulting tree onto a rolling retention buffer.</li>
+</ul>
+<h3 id="javascript-variant"><a class="header" href="#javascript-variant">JavaScript variant</a></h3>
+<p>Plain <code>{ value, children }</code> objects on the JS heap. The GC owns the graph.</p>
+<pre><code class="language-typescript">interface JsTreeNode {
+    value: number;
+    children: JsTreeNode[];
+}
+
+function jsBuildTree(depth: number, branching: number, seed: number): JsTreeNode {
+    const children: JsTreeNode[] = [];
+    if (depth &gt; 0) {
+        for (let i = 0; i &lt; branching; i++) {
+            const childSeed = ((seed * 31) + i) &gt;&gt;&gt; 0;
+            children.push(jsBuildTree(depth - 1, branching, childSeed));
+        }
+    }
+    return { value: seed, children };
+}
+
+function jsSumTree(node: JsTreeNode): number {
+    let sum = node.value;
+    const children = node.children;
+    for (let i = 0; i &lt; children.length; i++) {
+        sum = (sum + jsSumTree(children[i])) &gt;&gt;&gt; 0;
+    }
+    return sum;
+}
+</code></pre>
+<h3 id="rust--wasm-variant"><a class="header" href="#rust--wasm-variant">Rust → Wasm variant</a></h3>
+<p><code>TreeNode</code> records linked through <code>Vec</code>s in Wasm linear memory. Memory is
+freed deterministically in the <code>VecDeque</code>.</p>
+<pre class="playground"><code class="language-rust edition2024"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct TreeNode {
+    value: u32,
+    children: Vec&lt;TreeNode&gt;,
+}
+
+fn build_tree(depth: u32, branching: u32, seed: u32) -&gt; TreeNode {
+    let mut children: Vec&lt;TreeNode&gt; = Vec::new();
+    if depth &gt; 0 {
+        children.reserve_exact(branching as usize);
+        for i in 0..branching {
+            let child_seed = seed.wrapping_mul(31).wrapping_add(i);
+            children.push(build_tree(depth - 1, branching, child_seed));
+        }
+    }
+    TreeNode { value: seed, children }
+}
+
+fn sum_tree(node: &amp;TreeNode) -&gt; u32 {
+    let mut sum = node.value;
+    for child in &amp;node.children {
+        sum = sum.wrapping_add(sum_tree(child));
+    }
+    sum
+}
+<span class="boring">}</span></code></pre>
+<h2 id="what-you-should-see"><a class="header" href="#what-you-should-see">What you should see</a></h2>
+<ul>
+<li><strong>Top chart (per-call work time, ms).</strong> The JS half bobs around the same baseline most of the time, but
+sees regular spikes. The Wasm half stays close to a flat band.</li>
+<li><strong>Bottom chart (heap MB).</strong> The JS half climbs in a sawtooth pattern. A slow ramp occurs
+as memory fills, then a sharp drop every time a major GC
+cycle completes. Each drop on the heap chart lines up with a spike on the
+work-time chart above. The Wasm half stays almost flat.</li>
+</ul>
+<p><code>performance.memory</code> is a Chromium-only API. In Firefox and Safari the heap
+chart will stay empty.</p>
+<p><gc-jitter-viewer></gc-jitter-viewer></p>
+<h2 id="analysis"><a class="header" href="#analysis">Analysis</a></h2>
+<p>Rust + Wasm do not require garbage collection. Memory is freed deterministically and, unlike JavaScript, do not accumulate into a single moment that can cause a dropped frame.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="wasm-simd-a-primitive-javascript-doesnt-have"><a class="header" href="#wasm-simd-a-primitive-javascript-doesnt-have">Wasm SIMD: a primitive JavaScript doesn’t have</a></h1>
+<p>WebAssembly’s <a href="https://github.com/WebAssembly/simd">fixed-width SIMD</a> proposal exposes 128-bit vector registers and lane-wise arithmetic intrinsics (<code>f32x4_mul</code>, <code>i32x4_add</code>, <code>v128_load</code>, …). They’ve been baseline in every major browser since 2023. From Rust we get them as plain functions in <code>std::arch::wasm32</code>.</p>
+<p>JavaScript has no equivalent. The original <a href="https://tc39.es/ecmascript_simd/">SIMD.js proposal</a> was withdrawn in favour of “use Wasm SIMD instead”.</p>
+<p>Wasm SIMD can be critical to providing maximum performance to users.</p>
+<h2 id="the-workload-1"><a class="header" href="#the-workload-1">The workload</a></h2>
+<p>Per call:</p>
+<ul>
+<li>take two <code>Float32Array</code>s of length <code>N</code></li>
+<li>return <code>sum_{i=0..N} a[i] * b[i]</code></li>
+</ul>
+<p>To keep the chart honest, all three variants are doing the same I/O
+pattern:</p>
+<ul>
+<li>The JavaScript variant’s arrays live on the JS heap and are filled in
+place each round (no per-round allocation churn).</li>
+<li>Both Wasm variants pre-allocate two <code>Vec&lt;f32&gt;</code> of length <code>N</code> in their
+respective module’s linear memory and expose them as <code>Float32Array</code>
+views. This emulates the
+<a href="#myth-wasm-string-overhead-ruins-performance">pre-allocated buffer pattern</a>.</li>
+</ul>
+<p>So the duration on the chart is the cost of the loop itself, not bridge
+or allocation overhead.</p>
+<h3 id="javascript-variant-1"><a class="header" href="#javascript-variant-1">JavaScript variant</a></h3>
+<pre><code class="language-typescript">function jsDotProduct(a: Float32Array, b: Float32Array): number {
+    let acc = 0;
+    for (let i = 0; i &lt; a.length; i++) {
+        acc += a[i] * b[i];
+    }
+    return acc;
+}
+</code></pre>
+<h3 id="rust-scalar-variant-compiled-without-simd128"><a class="header" href="#rust-scalar-variant-compiled-without-simd128">Rust scalar variant (compiled without <code>+simd128</code>)</a></h3>
+<pre class="playground"><code class="language-rust edition2024"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[wasm_bindgen]
+pub fn dot_product_scalar(n: u32) -&gt; f32 {
+    let n = n as usize;
+    DOT_A.with(|a| {
+        DOT_B.with(|b| {
+            let a = a.borrow();
+            let b = b.borrow();
+            let a = &amp;a[..n];
+            let b = &amp;b[..n];
+            let mut acc = 0.0_f32;
+            for i in 0..n {
+                acc += a[i] * b[i];
+            }
+            acc
+        })
+    })
+}
+<span class="boring">}</span></code></pre>
+<h3 id="rust-simd-variant-compiled-with-relaxed-simd"><a class="header" href="#rust-simd-variant-compiled-with-relaxed-simd">Rust SIMD variant (compiled with <code>+relaxed-simd</code>)</a></h3>
+<p><code>v128_load</code> 16 bytes at a time, <code>f32x4_mul</code> lane-wise, accumulate into a <code>v128</code> running sum, horizontally reduce once at the end, and a scalar tail for any leftover &lt; 4 elements.</p>
+<pre class="playground"><code class="language-rust edition2024"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(target_feature = "simd128")]
+#[wasm_bindgen]
+pub fn dot_product_simd(n: u32) -&gt; f32 {
+    use std::arch::wasm32::{
+        f32x4_add, f32x4_extract_lane, f32x4_mul, f32x4_splat, v128_load,
+    };
+
+    let n = n as usize;
+    DOT_A.with(|a| {
+        DOT_B.with(|b| {
+            let a = a.borrow();
+            let b = b.borrow();
+            let a = &amp;a[..n];
+            let b = &amp;b[..n];
+
+            let mut acc = f32x4_splat(0.0);
+            let chunks = n / 4;
+            // SAFETY: `a` and `b` are `&amp;[f32]` of length `n`; we read
+            // exactly `chunks * 4` lanes and the scalar tail covers the
+            // remainder.
+            unsafe {
+                for i in 0..chunks {
+                    let va = v128_load(a.as_ptr().add(i * 4) as *const _);
+                    let vb = v128_load(b.as_ptr().add(i * 4) as *const _);
+                    acc = f32x4_add(acc, f32x4_mul(va, vb));
+                }
+            }
+
+            let mut sum = f32x4_extract_lane::&lt;0&gt;(acc)
+                + f32x4_extract_lane::&lt;1&gt;(acc)
+                + f32x4_extract_lane::&lt;2&gt;(acc)
+                + f32x4_extract_lane::&lt;3&gt;(acc);
+            for i in (chunks * 4)..n {
+                sum += a[i] * b[i];
+            }
+            sum
+        })
+    })
+}
+<span class="boring">}</span></code></pre>
+<h2 id="the-chart"><a class="header" href="#the-chart">The chart</a></h2>
+<p><benchmark-graph-viewer benches="&#39;bench-js-dot-product&#39;,&#39;bench-wasm-dot-product-scalar&#39;,&#39;bench-wasm-dot-product-simd&#39;" labels="&#39;JavaScript (Float32Array loop)&#39;,&#39;Wasm scalar (no +simd128)&#39;,&#39;Wasm SIMD (f32x4 intrinsics)&#39;" n="4096,16384,65536,262144,1048576" x-label="# of f32 elements per call" rounds="20">
+</benchmark-graph-viewer></p>
+<h2 id="what-you-should-see-1"><a class="header" href="#what-you-should-see-1">What you should see</a></h2>
+<p>Three lines, all linear in <code>N</code>:</p>
+<ul>
+<li><strong>JavaScript</strong> and <strong>Wasm scalar</strong> sit close together. JS is doing the
+same scalar multiply-accumulate the Wasm scalar version is.</li>
+<li><strong>Wasm SIMD</strong> drops to roughly a quarter of either scalar line. The
+ceiling is <code>4×</code> because we’re packing four f32 multiplies into one
+<code>f32x4_mul</code>.</li>
+</ul>
+<p>The interesting takeaway isn’t the size of the speedup. It’s the <strong>shape</strong>: at this kind of straight-line numeric loop, <em>just</em> moving from JavaScript to scalar Wasm doesn’t buy you much. The win comes from Wasm SIMD, which is something JavaScript can’t express at all.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="wasm-threading-parallel-without-paying-postmessage"><a class="header" href="#wasm-threading-parallel-without-paying-postmessage">Wasm threading: parallel without paying postMessage</a></h1>
+<p>The saving grace of low-tier devices is that they’re multithreaded. Wasm takes better advantage of that than JavaScript does.</p>
+<p>In Rust + Wasm with <code>wasm-bindgen-rayon</code>, every thread is a Web Worker spawned over the <em>same</em> <code>WebAssembly.Memory</code>. A <code>&amp;[f32]</code> passed to <code>rayon::par_iter_mut</code> is a pointer into shared linear memory; every worker thread can read and write it directly. There is no copy. Standard library <code>std::sync::Mutex</code>, <code>RwLock</code>, MPSC channels, atomics all just work.</p>
+<p>In JavaScript, the equivalent fan-out is <code>postMessage</code> to a pool of Web Workers and there are two flavours of it shown the below benchmarks (structural cloning and trying as much as possible to minimise copy).</p>
+<h2 id="the-workload-2"><a class="header" href="#the-workload-2">The workload</a></h2>
+<p>The lightest meaningful parallel map: SAXPY, <code>out[i] = a * x[i] + y[i]</code>. Per element it’s one f32 multiply + one f32 add. It’s a simple operation where we aim to measure message overhead rather than computation speed.</p>
+<p>We test 5 variants, as detailed below:</p>
+<h3 id="1-javascript-variant-single-threaded"><a class="header" href="#1-javascript-variant-single-threaded">1. JavaScript variant (single-threaded)</a></h3>
+<p>A baseline comparison that simply executes everything on one thread.</p>
+<pre><code class="language-typescript">const n = x.length;
+for (let i = 0; i &lt; n; i++) {
+  output[i] = a * x[i] + y[i];
+}
+</code></pre>
+<h3 id="2-javascript-worker-structured-clone"><a class="header" href="#2-javascript-worker-structured-clone">2. JavaScript worker (structured clone)</a></h3>
+<p>A persistent pool of <code>K = navigator.hardwareConcurrency</code> (capped at 8) workers.</p>
+<p>Each call, we:</p>
+<ul>
+<li><code>postMessage</code> <code>{x_chunk, y_chunk, a}</code> to each worker (structured-clone
+alloc + memcpy).</li>
+<li>the worker performs the computation.</li>
+<li>the worker allocates an output <code>Float32Array</code>.</li>
+<li>the worker posts it back.</li>
+<li>the main thread glues the <code>K</code> output chunks together.</li>
+</ul>
+<pre><code class="language-typescript">self.onmessage = (event: MessageEvent&lt;SaxpyCloneRequest&gt;) =&gt; {
+    const { requestId, a, x, y } = event.data;
+    const n = x.length;
+    const output = new Float32Array(n);
+    for (let i = 0; i &lt; n; i++) {
+        output[i] = a * x[i] + y[i];
+    }
+    const response: SaxpyCloneResponse = { requestId, output };
+    self.postMessage(response);
+};
+</code></pre>
+<h3 id="3-javascript-worker-transferables"><a class="header" href="#3-javascript-worker-transferables">3. JavaScript worker (transferables)</a></h3>
+<p>The same as the structured clone version but where no allocations occur and we take advantage of transferables.</p>
+<pre><code class="language-typescript">self.onmessage = (event: MessageEvent&lt;SaxpyTransferRequest&gt;) =&gt; {
+    const { requestId, a, x, y, output } = event.data;
+    const n = x.length;
+    for (let i = 0; i &lt; n; i++) {
+        output[i] = a * x[i] + y[i];
+    }
+    const response: SaxpyTransferResponse = { requestId, x, y, output };
+    self.postMessage(response, [x.buffer, y.buffer, output.buffer]);
+};
+</code></pre>
+<h3 id="4-rust-scalar-single-threaded"><a class="header" href="#4-rust-scalar-single-threaded">4. Rust scalar single threaded</a></h3>
+<p>The same as 1 but entirely in Wasm.</p>
+<pre class="playground"><code class="language-rust edition2024"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[wasm_bindgen]
+pub fn saxpy_scalar(n: u32, a: f32) {
+    let n = n as usize;
+    SAXPY_X.with(|x| {
+        SAXPY_Y.with(|y| {
+            SAXPY_OUT.with(|o| {
+                let x = x.borrow();
+                let y = y.borrow();
+                let mut o = o.borrow_mut();
+                let x = &amp;x[..n];
+                let y = &amp;y[..n];
+                let o = &amp;mut o[..n];
+                for i in 0..n {
+                    o[i] = a * x[i] + y[i];
+                }
+            })
+        })
+    });
+}
+<span class="boring">}</span></code></pre>
+<h3 id="5-rust-parallel-rayon--atomics"><a class="header" href="#5-rust-parallel-rayon--atomics">5. Rust parallel (Rayon + Atomics)</a></h3>
+<p>We perform multithreading using the Shared Array Buffer and Atomics Web API. Zero bytes cross any boundary and the buffers live where the threads can already access them.</p>
+<pre class="playground"><code class="language-rust edition2024"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[wasm_bindgen]
+pub fn saxpy_parallel(n: u32, a: f32) {
+    let n = n as usize;
+    SAXPY_X.with(|x| {
+        SAXPY_Y.with(|y| {
+            SAXPY_OUT.with(|o| {
+                let x = x.borrow();
+                let y = y.borrow();
+                let mut o = o.borrow_mut();
+                let x = &amp;x[..n];
+                let y = &amp;y[..n];
+                let o = &amp;mut o[..n];
+                o.par_iter_mut()
+                    .with_min_len(8192)
+                    .zip(x.par_iter())
+                    .zip(y.par_iter())
+                    .for_each(|((out, &amp;xv), &amp;yv)| {
+                        *out = a * xv + yv;
+                    });
+            })
+        })
+    });
+}
+<span class="boring">}</span></code></pre>
+<h2 id="the-chart-1"><a class="header" href="#the-chart-1">The chart</a></h2>
+<p><wasm-threading-viewer></wasm-threading-viewer></p>
+<h2 id="analysis-1"><a class="header" href="#analysis-1">Analysis</a></h2>
+<p>Wasm threading sees the best performance because message overhead is totally eliminated using Wasm threading. Rayon efficiently dispatches the batches of work to available threads who operate over the same memory.</p>
+<h2 id="what-about-sharedarraybuffer--atomics-in-javascript"><a class="header" href="#what-about-sharedarraybuffer--atomics-in-javascript">What about <code>SharedArrayBuffer</code> + <code>Atomics</code> in JavaScript?</a></h2>
+<p>Yes, you can have shared memory in pure JavaScript. The cost is that
+you stop writing JavaScript and start writing a byte-level protocol.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            MathJax.Hub.Register.StartupHook('End', function() {
+                window.setTimeout(window.print, 100);
+            });
+        });
+        </script>
+
+
+    </div>
+    </body>
+</html>
