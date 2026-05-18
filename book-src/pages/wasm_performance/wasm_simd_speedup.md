@@ -1,22 +1,17 @@
 # Wasm SIMD: a primitive JavaScript doesn't have
 
-WebAssembly's [fixed-width SIMD](https://github.com/WebAssembly/simd)
-proposal exposes 128-bit vector registers and lane-wise arithmetic
-intrinsics (`f32x4_mul`, `i32x4_add`, `v128_load`, …). They've been
-baseline in every major browser since 2023. From Rust we get them as
-plain functions in `std::arch::wasm32`.
+WebAssembly's [fixed-width SIMD](https://github.com/WebAssembly/simd) proposal exposes 128-bit vector registers and lane-wise arithmetic intrinsics (`f32x4_mul`, `i32x4_add`, `v128_load`, …). They've been baseline in every major browser since 2023. From Rust we get them as plain functions in `std::arch::wasm32`.
 
-JavaScript has no equivalent. The original
-[SIMD.js proposal](https://tc39.es/ecmascript_simd/) was withdrawn in
-favour of "use Wasm SIMD instead".
+JavaScript has no equivalent. The original [SIMD.js proposal](https://tc39.es/ecmascript_simd/) was withdrawn in favour of "use Wasm SIMD instead".
 
 Wasm SIMD can be critical to providing maximum performance to users.
 
 ## The workload
 
-Per call: 
+Per call:
+
 - take two `Float32Array`s of length `N`
-- return         `sum_{i=0..N} a[i] * b[i]`
+- return `sum_{i=0..N} a[i] * b[i]`
 
 To keep the chart honest, all three variants are doing the same I/O
 pattern:
@@ -45,9 +40,7 @@ or allocation overhead.
 
 ### Rust SIMD variant (compiled with `+relaxed-simd`)
 
-`v128_load` 16
-bytes at a time, `f32x4_mul` lane-wise, accumulate into a `v128`
-running sum, horizontally reduce once at the end, and a scalar tail for any leftover < 4 elements.
+`v128_load` 16 bytes at a time, `f32x4_mul` lane-wise, accumulate into a `v128` running sum, horizontally reduce once at the end, and a scalar tail for any leftover < 4 elements.
 
 ```rust
 {{#include ../../../src/wasm_simd_speedup.rs:simd}}
@@ -73,7 +66,4 @@ Three lines, all linear in `N`:
   ceiling is `4×` because we're packing four f32 multiplies into one
   `f32x4_mul`.
 
-The interesting takeaway isn't the size of the speedup. It's the
-**shape**: at this kind of straight-line numeric loop, *just* moving
-from JavaScript to scalar Wasm doesn't buy you much. The win comes from
-Wasm SIMD, which is something JavaScript can't express at all. 
+The interesting takeaway isn't the size of the speedup. It's the **shape**: at this kind of straight-line numeric loop, _just_ moving from JavaScript to scalar Wasm doesn't buy you much. The win comes from Wasm SIMD, which is something JavaScript can't express at all.

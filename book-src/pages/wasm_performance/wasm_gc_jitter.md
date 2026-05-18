@@ -29,9 +29,8 @@ freed deterministically in the `VecDeque`.
 
 ## What you should see
 
-
 - **Top chart (per-call work time, ms).** The JS half bobs around the same baseline most of the time, but
-  sees regular spikes. The Wasm half stays close to a flat band. 
+  sees regular spikes. The Wasm half stays close to a flat band.
 - **Bottom chart (heap MB).** The JS half climbs in a sawtooth pattern. A slow ramp occurs
   as memory fills, then a sharp drop every time a major GC
   cycle completes. Each drop on the heap chart lines up with a spike on the
