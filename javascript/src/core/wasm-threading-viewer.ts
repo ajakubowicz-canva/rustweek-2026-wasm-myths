@@ -22,7 +22,8 @@ import init, {
     saxpy_parallel,
 } from "../../generated_wasm/threads/index.js";
 
-import SaxpyWorker from "../workers/saxpy-worker.js?worker";
+import SaxpyCloneWorker from "../workers/saxpy-worker-clone.js?worker";
+import SaxpyTransferWorker from "../workers/saxpy-worker-transfer.js?worker";
 import { fillRandomFloat32 } from "../benchmarks/simd/shared.js";
 
 Chart.register(
@@ -36,51 +37,56 @@ Chart.register(
     Legend,
 );
 
-// Sweep across these element counts. The lower bound is large enough
-// that postMessage RTT clearly wins out over per-call setup; the upper
-// bound is bounded by how much memory we want to allocate per round
-// (16 MB per buffer × 3 buffers × 2 sides = ~96 MB at the top point —
-// already a stress test for older laptops, but well within budget on
-// modern ones). Doubling the top point would push us past Chrome's
-// per-message structured-clone limits on some machines.
 const N_SWEEP = [65536, 262144, 1048576, 4194304] as const;
-
-// Rounds per (N, variant). Smaller than the SIMD appendix because each
-// JS-workers round is dominated by ~10–50 ms of postMessage at the high
-// N's, so totalling 6 rounds is already several hundred ms; pushing to
-// 20 makes the page feel unresponsive without changing the chart shape.
 const ROUNDS = 6;
-
-// SAXPY scalar `a`. Held constant across the run so all four variants
-// are computing exactly the same thing — only the dispatch differs.
 const SAXPY_A = 2.0;
-
-// Thread-pool size. Capped at 8 so the chart isn't dominated by core
-// count on monstrous machines; all four variants use the same K.
 const MAX_THREADS = 8;
+
 function chooseThreadCount(): number {
     const hw = (typeof navigator !== "undefined" && navigator.hardwareConcurrency) || 4;
     return Math.max(2, Math.min(MAX_THREADS, hw));
 }
 
-type VariantId = "js_main" | "js_workers" | "wasm_scalar" | "wasm_threads";
+type VariantId =
+    | "js_main"
+    | "js_workers_clone"
+    | "js_workers_transfer"
+    | "wasm_scalar"
+    | "wasm_threads";
+
+const VARIANTS: readonly VariantId[] = [
+    "js_main",
+    "js_workers_clone",
+    "js_workers_transfer",
+    "wasm_scalar",
+    "wasm_threads",
+] as const;
 
 const VARIANT_LABELS: Record<VariantId, string> = {
     js_main: "JavaScript (single-threaded)",
-    js_workers: "JavaScript (web workers + postMessage)",
+    js_workers_clone: "JavaScript workers (structured clone)",
+    js_workers_transfer: "JavaScript workers (Transferable + persistent buffers)",
     wasm_scalar: "Wasm (single-threaded)",
     wasm_threads: "Wasm (rayon threads)",
 };
 
 const VARIANT_COLORS: Record<VariantId, string> = {
     js_main: "#bdbdbd",
-    js_workers: "#e15759",
+    js_workers_clone: "#e15759",
+    js_workers_transfer: "#f28e2b",
     wasm_scalar: "#76b7b2",
     wasm_threads: "#4e79a7",
 };
 
-interface SaxpyResponse {
+interface SaxpyCloneResponse {
     requestId: number;
+    output: Float32Array;
+}
+
+interface SaxpyTransferResponse {
+    requestId: number;
+    x: Float32Array;
+    y: Float32Array;
     output: Float32Array;
 }
 
@@ -99,7 +105,8 @@ class WasmThreadingViewer extends LitElement {
     @state() private accessor threadCount = 0;
     @state() private accessor results: Record<VariantId, ResultPoint[]> = {
         js_main: [],
-        js_workers: [],
+        js_workers_clone: [],
+        js_workers_transfer: [],
         wasm_scalar: [],
         wasm_threads: [],
     };
@@ -107,24 +114,19 @@ class WasmThreadingViewer extends LitElement {
     private chart: Chart | null = null;
     private observer: IntersectionObserver | null = null;
 
-    // Worker pool, sized once per run to `threadCount`.
-    private workerPool: Worker[] = [];
-    // Per-worker pre-allocated chunk buffers, refilled in place each
-    // round so the timing isolates structured-clone cost from
-    // per-round allocation noise.
+    private cloneWorkerPool: Worker[] = [];
+    private transferWorkerPool: Worker[] = [];
+
     private chunkXs: Float32Array[] = [];
     private chunkYs: Float32Array[] = [];
 
-    // Cached input/output Float32Arrays for the JS variants. Resized
-    // once per `N`, then refilled in place each round.
+    private transferChunkOuts: Float32Array[] = [];
+
     private jsX: Float32Array | null = null;
     private jsY: Float32Array | null = null;
     private jsOutput: Float32Array | null = null;
 
-    // Cached views into Wasm-threads linear memory. Refresh after any
-    // resize, plus on the safety-net `byteLength === 0` check.
     private wasmReady: Promise<void> | null = null;
-    private wasmInitialised = false;
     private cachedWasmN = -1;
     private wasmX: Float32Array | null = null;
     private wasmY: Float32Array | null = null;
@@ -152,8 +154,10 @@ class WasmThreadingViewer extends LitElement {
         super.disconnectedCallback();
         this.observer?.disconnect();
         this.observer = null;
-        for (const w of this.workerPool) w.terminate();
-        this.workerPool = [];
+        for (const w of this.cloneWorkerPool) w.terminate();
+        for (const w of this.transferWorkerPool) w.terminate();
+        this.cloneWorkerPool = [];
+        this.transferWorkerPool = [];
         this.chart?.destroy();
         this.chart = null;
     }
@@ -166,12 +170,6 @@ class WasmThreadingViewer extends LitElement {
     // -- Wasm + worker pool init ------------------------------------------
 
     private async ensureWasmAndPool(): Promise<boolean> {
-        // Cross-origin-isolation gate. `SharedArrayBuffer` and rayon
-        // worker spawn both need it. The COI service-worker shim
-        // installs on first load and reloads the page; if we still see
-        // `false` here, the SW probably isn't installed yet (e.g.
-        // first-ever visit, hard refresh, or the browser doesn't ship
-        // the API at all).
         if (typeof SharedArrayBuffer === "undefined" || !crossOriginIsolated) {
             this.state = "blocked";
             this.statusMessage =
@@ -188,15 +186,19 @@ class WasmThreadingViewer extends LitElement {
             this.wasmReady = (async () => {
                 await init();
                 await initThreadPool(K);
-                this.wasmInitialised = true;
             })();
         }
         await this.wasmReady;
 
-        if (this.workerPool.length !== K) {
-            for (const w of this.workerPool) w.terminate();
-            this.workerPool = [];
-            for (let i = 0; i < K; i++) this.workerPool.push(new SaxpyWorker());
+        if (this.cloneWorkerPool.length !== K) {
+            for (const w of this.cloneWorkerPool) w.terminate();
+            this.cloneWorkerPool = [];
+            for (let i = 0; i < K; i++) this.cloneWorkerPool.push(new SaxpyCloneWorker());
+        }
+        if (this.transferWorkerPool.length !== K) {
+            for (const w of this.transferWorkerPool) w.terminate();
+            this.transferWorkerPool = [];
+            for (let i = 0; i < K; i++) this.transferWorkerPool.push(new SaxpyTransferWorker());
         }
         return true;
     }
@@ -225,18 +227,17 @@ class WasmThreadingViewer extends LitElement {
             this.jsY = new Float32Array(N);
             this.jsOutput = new Float32Array(N);
         }
-        // Per-worker chunk buffers. Floor-division puts any remainder on
-        // the last worker; that lane is ≤ K-1 elements bigger, well
-        // below the noise floor.
         const base = Math.floor(N / K);
         const remainder = N - base * K;
         const want = (idx: number) => base + (idx === K - 1 ? remainder : 0);
         if (this.chunkXs.length !== K || this.chunkXs[0]?.length !== want(0)) {
             this.chunkXs = [];
             this.chunkYs = [];
+            this.transferChunkOuts = [];
             for (let i = 0; i < K; i++) {
                 this.chunkXs.push(new Float32Array(want(i)));
                 this.chunkYs.push(new Float32Array(want(i)));
+                this.transferChunkOuts.push(new Float32Array(want(i)));
             }
         }
         return { x: this.jsX!, y: this.jsY!, output: this.jsOutput! };
@@ -254,16 +255,26 @@ class WasmThreadingViewer extends LitElement {
             const { x: jsX, y: jsY, output: jsOutput } = this.ensureJsBuffers(N, K);
             const wasmBufs = this.ensureWasmBuffers(N);
 
-            // Refill once per `N`; the *contents* of the buffers don't
-            // matter for SAXPY timing, but seeded fills keep V8 from
-            // constant-folding the loop away.
             fillRandomFloat32(jsX, 1);
             fillRandomFloat32(jsY, 0x9e3779b9);
             fillRandomFloat32(wasmBufs.x, 1);
             fillRandomFloat32(wasmBufs.y, 0x9e3779b9);
 
+            const base = Math.floor(N / K);
+            for (let k = 0; k < K; k++) {
+                const start = k * base;
+                const end = k === K - 1 ? N : start + base;
+                this.chunkXs[k].set(jsX.subarray(start, end));
+                this.chunkYs[k].set(jsY.subarray(start, end));
+            }
+
             const jsMainMs = await this.timeRounds(() => this.runJsMain(jsX, jsY, jsOutput));
-            const jsWorkersMs = await this.timeRounds(() => this.runJsWorkers(jsX, jsY, jsOutput, K));
+            const jsWorkersCloneMs = await this.timeRounds(() =>
+                this.runJsWorkersClone(jsOutput, K),
+            );
+            const jsWorkersTransferMs = await this.timeRounds(() =>
+                this.runJsWorkersTransfer(jsOutput, K),
+            );
             const wasmScalarMs = await this.timeRounds(() => {
                 this.refreshWasmViewsIfDetached();
                 saxpy_scalar(N, SAXPY_A);
@@ -277,13 +288,19 @@ class WasmThreadingViewer extends LitElement {
 
             this.results = {
                 js_main: [...this.results.js_main, { N, duration: jsMainMs }],
-                js_workers: [...this.results.js_workers, { N, duration: jsWorkersMs }],
+                js_workers_clone: [
+                    ...this.results.js_workers_clone,
+                    { N, duration: jsWorkersCloneMs },
+                ],
+                js_workers_transfer: [
+                    ...this.results.js_workers_transfer,
+                    { N, duration: jsWorkersTransferMs },
+                ],
                 wasm_scalar: [...this.results.wasm_scalar, { N, duration: wasmScalarMs }],
                 wasm_threads: [...this.results.wasm_threads, { N, duration: wasmThreadsMs }],
             };
             // Yield to the event loop so the UI can refresh between N
-            // points; otherwise the whole sweep blocks rendering for
-            // tens of seconds at a stretch.
+            // points.
             await new Promise((r) => setTimeout(r, 0));
         }
     }
@@ -314,31 +331,11 @@ class WasmThreadingViewer extends LitElement {
         this.sinkHole = (this.sinkHole + output[0]) | 0;
     }
 
-    private async runJsWorkers(
-        x: Float32Array,
-        y: Float32Array,
-        output: Float32Array,
-        K: number,
-    ): Promise<void> {
-        // Refill per-worker chunk buffers from the source. This is *not*
-        // postMessage cost — it's setup that happens on the main thread
-        // before the wire — but it's also work a real fan-out workload
-        // would have to do, and skipping it would lie about the realistic
-        // cost of the pattern. The structured-clone cost is what
-        // dominates anyway.
-        const base = Math.floor(x.length / K);
-        for (let k = 0; k < K; k++) {
-            const start = k * base;
-            const end = k === K - 1 ? x.length : start + base;
-            const cx = this.chunkXs[k];
-            const cy = this.chunkYs[k];
-            cx.set(x.subarray(start, end));
-            cy.set(y.subarray(start, end));
-        }
-
-        const promises = this.workerPool.map((worker, k) => {
+    private async runJsWorkersClone(output: Float32Array, K: number): Promise<void> {
+        const base = Math.floor(output.length / K);
+        const promises = this.cloneWorkerPool.map((worker, k) => {
             return new Promise<Float32Array>((resolve) => {
-                const onMessage = (event: MessageEvent<SaxpyResponse>) => {
+                const onMessage = (event: MessageEvent<SaxpyCloneResponse>) => {
                     if (event.data.requestId !== k) return;
                     worker.removeEventListener("message", onMessage);
                     resolve(event.data.output);
@@ -360,13 +357,47 @@ class WasmThreadingViewer extends LitElement {
         this.sinkHole = (this.sinkHole + output[0]) | 0;
     }
 
-    // -- Lifecycle --------------------------------------------------------
+    private async runJsWorkersTransfer(output: Float32Array, K: number): Promise<void> {
+        const base = Math.floor(output.length / K);
+        const promises = this.transferWorkerPool.map((worker, k) => {
+            return new Promise<SaxpyTransferResponse>((resolve) => {
+                const onMessage = (event: MessageEvent<SaxpyTransferResponse>) => {
+                    if (event.data.requestId !== k) return;
+                    worker.removeEventListener("message", onMessage);
+                    resolve(event.data);
+                };
+                worker.addEventListener("message", onMessage);
+                const x = this.chunkXs[k];
+                const y = this.chunkYs[k];
+                const out = this.transferChunkOuts[k];
+                worker.postMessage(
+                    { requestId: k, a: SAXPY_A, x, y, output: out },
+                    [x.buffer, y.buffer, out.buffer],
+                );
+            });
+        });
+
+        const replies = await Promise.all(promises);
+        for (let k = 0; k < K; k++) {
+            this.chunkXs[k] = replies[k].x;
+            this.chunkYs[k] = replies[k].y;
+            this.transferChunkOuts[k] = replies[k].output;
+            output.set(replies[k].output, k * base);
+        }
+        this.sinkHole = (this.sinkHole + output[0]) | 0;
+    }
 
     private async start(): Promise<void> {
         if (this.state === "running" || this.state === "loading") return;
         this.state = "checking-coi";
         this.statusMessage = "";
-        this.results = { js_main: [], js_workers: [], wasm_scalar: [], wasm_threads: [] };
+        this.results = {
+            js_main: [],
+            js_workers_clone: [],
+            js_workers_transfer: [],
+            wasm_scalar: [],
+            wasm_threads: [],
+        };
 
         const ok = await this.ensureWasmAndPool();
         if (!ok) return;
@@ -388,22 +419,24 @@ class WasmThreadingViewer extends LitElement {
         void this.start();
     }
 
-    // -- Chart ------------------------------------------------------------
-
     private initChart(): void {
         const canvas = this.querySelector<HTMLCanvasElement>("canvas");
         if (!canvas) return;
-        const variants: VariantId[] = ["js_main", "js_workers", "wasm_scalar", "wasm_threads"];
         this.chart = new Chart(canvas, {
             type: "line",
             data: {
                 labels: N_SWEEP.map(String),
-                datasets: variants.map((id) => ({
+                datasets: VARIANTS.map((id) => ({
                     label: VARIANT_LABELS[id],
                     data: [] as number[],
                     borderColor: VARIANT_COLORS[id],
                     backgroundColor: "transparent",
-                    borderWidth: id === "js_workers" || id === "wasm_threads" ? 2 : 1.25,
+                    borderWidth:
+                        id === "js_workers_clone" ||
+                            id === "js_workers_transfer" ||
+                            id === "wasm_threads"
+                            ? 2
+                            : 1.25,
                     pointRadius: 3,
                     tension: 0.1,
                     _variant: id,
@@ -437,9 +470,8 @@ class WasmThreadingViewer extends LitElement {
 
     private refreshChart(): void {
         if (!this.chart) return;
-        const variants: VariantId[] = ["js_main", "js_workers", "wasm_scalar", "wasm_threads"];
-        for (let v = 0; v < variants.length; v++) {
-            const data = this.results[variants[v]].map((p) => ({ x: p.N, y: p.duration }));
+        for (let v = 0; v < VARIANTS.length; v++) {
+            const data = this.results[VARIANTS[v]].map((p) => ({ x: p.N, y: p.duration }));
             this.chart.data.datasets[v].data = data as unknown as number[];
         }
         this.chart.update("none");
@@ -476,32 +508,31 @@ class WasmThreadingViewer extends LitElement {
 
     private renderTable() {
         if (this.state !== "done") return html``;
-        const variants: VariantId[] = ["js_main", "js_workers", "wasm_scalar", "wasm_threads"];
         return html`
             <table style="width:100%;border-collapse:collapse;font-size:13px;font-family:ui-monospace,Menlo,monospace;margin-top:12px">
                 <thead style="background:#f5f5f5">
                     <tr>
                         <th style="text-align:left;padding:4px 8px">variant</th>
                         ${N_SWEEP.map(
-                            (n) => html`<th style="text-align:right;padding:4px 8px">N=${n.toLocaleString()}</th>`,
-                        )}
+            (n) => html`<th style="text-align:right;padding:4px 8px">N=${n.toLocaleString()}</th>`,
+        )}
                     </tr>
                 </thead>
                 <tbody>
-                    ${variants.map(
-                        (id) => html`
+                    ${VARIANTS.map(
+            (id) => html`
                             <tr>
                                 <td style="padding:4px 8px">
                                     <span style="display:inline-block;width:10px;height:10px;background:${VARIANT_COLORS[id]};border-radius:2px;margin-right:6px;vertical-align:middle"></span>
                                     ${VARIANT_LABELS[id]}
                                 </td>
                                 ${this.results[id].map(
-                                    (p) =>
-                                        html`<td style="text-align:right;padding:4px 8px">${this.fmt(p.duration)}</td>`,
-                                )}
+                (p) =>
+                    html`<td style="text-align:right;padding:4px 8px">${this.fmt(p.duration)}</td>`,
+            )}
                             </tr>
                         `,
-                    )}
+        )}
                 </tbody>
             </table>
         `;
@@ -517,8 +548,8 @@ class WasmThreadingViewer extends LitElement {
                     <div>${this.renderStatus()}</div>
                     <div>
                         ${canRestart
-                            ? html`<button style=${buttonStyle} @click=${this.restart}>↺ Restart</button>`
-                            : html``}
+                ? html`<button style=${buttonStyle} @click=${this.restart}>↺ Restart</button>`
+                : html``}
                     </div>
                 </div>
                 <div style="position:relative;height:340px">

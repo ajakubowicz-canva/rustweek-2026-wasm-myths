@@ -30,36 +30,12 @@ Chart.register(
     Filler,
 );
 
-// Per call we build a balanced TREE_BRANCHING-ary tree of depth TREE_DEPTH:
-//   total_nodes = (BRANCHING^(DEPTH+1) - 1) / (BRANCHING - 1)
-// At depth=8, branching=4 that's 87,381 nodes. Each retained tree on the
-// JS side is therefore ~87k {value, children:[]} objects + ~22k child
-// arrays, all pointer-linked — exactly the kind of graph that turns V8's
-// mark phase into a visible pause. Rust holds the same shape but only
-// needs ~22k heap allocations per tree (leaves don't allocate; their
-// `Vec` is empty), and reclaims by walking the tree once on drop.
 const TREE_DEPTH = 8;
 const TREE_BRANCHING = 4;
 const RETAIN_FRAMES = 30;
 
-// Number of `alloc_op` calls per phase. The per-call cost is dominated by
-// build + sum on a 87k-node tree (~10–60 ms), and we want each phase to
-// run long enough that V8's incremental marking has time to finish
-// multiple full major-GC cycles. ~600 calls is roughly 10–40 s on a
-// typical laptop. Bump higher if your machine is fast enough that GC
-// pauses still don't show up.
 const ITERATIONS_PER_PHASE = 600;
-
-// Yield to the browser every N iterations so the UI stays responsive
-// (chart redraws, button clicks, scroll). Smaller = smoother UI but more
-// scheduler noise leaking into measurements.
 const YIELD_EVERY = 4;
-
-// Wait between phases for a major GC to land + linear memory to settle, so
-// the first samples of the next phase aren't polluted by leftover state.
-// Has to be generous enough for V8 to finish reclaiming the JS phase's
-// fully-retained graph before the Wasm phase starts measuring its heap
-// baseline.
 const COOLDOWN_MS = 3000;
 
 type Variant = "js_alloc" | "wasm_alloc";
@@ -91,28 +67,18 @@ function delay(ms: number): Promise<void> {
     return new Promise((r) => setTimeout(r, ms));
 }
 
-// JavaScript counterpart to the Rust `alloc_op`. Builds a balanced
-// `branching`-ary tree of depth `depth`, recursively sums every node's
-// value, then either drops the tree or pushes it onto a rolling retention
-// buffer. The retention is what forces V8 to promote the whole graph into
-// the old generation; the tree shape is what makes major GC's mark phase
-// expensive (every node + every children-array is a separate live heap
-// object the collector must walk).
-//
-// IMPORTANT: this runs on the main thread on purpose. `performance.memory`
-// is only exposed on `Window` in current browsers (not on
-// `DedicatedWorkerGlobalScope`), so we run the work where we can also see
-// the heap. Phases are serialised so the JS phase's allocations don't
-// conflate with the Wasm phase's heap baseline.
+const JS_RETAIN: JsTreeNode[] = [];
+
+function jsAllocOpReset(): void {
+    JS_RETAIN.length = 0;
+}
+
 // ANCHOR: js_alloc
 interface JsTreeNode {
     value: number;
     children: JsTreeNode[];
 }
-const JS_RETAIN: JsTreeNode[] = [];
-function jsAllocOpReset(): void {
-    JS_RETAIN.length = 0;
-}
+
 function jsBuildTree(depth: number, branching: number, seed: number): JsTreeNode {
     const children: JsTreeNode[] = [];
     if (depth > 0) {
@@ -123,6 +89,7 @@ function jsBuildTree(depth: number, branching: number, seed: number): JsTreeNode
     }
     return { value: seed, children };
 }
+
 function jsSumTree(node: JsTreeNode): number {
     let sum = node.value;
     const children = node.children;
@@ -131,6 +98,8 @@ function jsSumTree(node: JsTreeNode): number {
     }
     return sum;
 }
+// ANCHOR_END: js_alloc
+
 function jsAllocOp(
     depth: number,
     branching: number,
@@ -145,7 +114,6 @@ function jsAllocOp(
     }
     return sum;
 }
-// ANCHOR_END: js_alloc
 
 interface PhaseResult {
     work: Float64Array;
@@ -269,10 +237,6 @@ class GcJitterViewer extends LitElement {
         this.filled.js_alloc = 0;
         this.filled.wasm_alloc = 0;
         jsAllocOpReset();
-        // The Wasm reset crashes if the module hasn't been instantiated
-        // yet; on the very first run we may reach this before
-        // `ensureWasm()` has resolved, and there's no retention to clear
-        // anyway in that case.
         if (this.wasmInitialised) wasm_alloc_op_reset();
     }
 
@@ -294,8 +258,6 @@ class GcJitterViewer extends LitElement {
             if (this.cancelled) return;
             await this.waitWhilePaused();
 
-            // Vary the seed so V8 can't constant-fold the tree's contents
-            // (or short-circuit `sum_tree` to a cached value).
             const seed = (i + 1) >>> 0;
             const t0 = performance.now();
             this.sinkHole = (this.sinkHole + opFn(seed)) >>> 0;
@@ -313,10 +275,6 @@ class GcJitterViewer extends LitElement {
         }
         this.scheduleChartUpdate();
 
-        // Drop the retention buffer so it can be reclaimed before the next
-        // phase starts. Without this, the JS phase's old-gen footprint
-        // would still be sitting on the heap during the Wasm phase and
-        // skew the heap baseline.
         if (variant === "js_alloc") jsAllocOpReset();
         else wasm_alloc_op_reset();
     }
@@ -406,10 +364,6 @@ class GcJitterViewer extends LitElement {
         const heapCanvas = this.querySelector<HTMLCanvasElement>("canvas[data-role=heap]");
         if (!workCanvas || !heapCanvas) return;
 
-        // Two phases sit back-to-back on the x-axis. Each variant's dataset
-        // covers half of it; the other half is `NaN` so Chart.js leaves a
-        // gap. Visually you get JS on the left, Wasm on the right, sharing
-        // a single y-axis so the contrast is unmistakable.
         const sharedDatasets = (yLabel: string) =>
             (["js_alloc", "wasm_alloc"] as const).map((variant) => ({
                 label: VARIANT_LABELS[variant],
