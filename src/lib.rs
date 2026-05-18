@@ -8,10 +8,6 @@ mod wasm_simd_speedup;
 #[cfg(feature = "threads")]
 mod wasm_threading;
 
-// Re-export `init_thread_pool` from `wasm-bindgen-rayon` so the threaded
-// artefact's JS bindings expose an `initThreadPool(n)` async function.
-// The viewer calls this once after `init()` to spin up the rayon worker
-// pool (one Web Worker per thread, all sharing the same Wasm memory).
 #[cfg(feature = "threads")]
 pub use wasm_bindgen_rayon::init_thread_pool;
 

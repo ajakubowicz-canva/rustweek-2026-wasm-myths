@@ -11,9 +11,6 @@ lto = true
 opt-level = 3
 
 [features]
-# Enabled only for the third Wasm artefact (`rustweek_2026_wasm_myths_threads`)
-# built with `RUSTFLAGS="-C target-feature=+atomics,+bulk-memory"` and
-# `-Z build-std=panic_abort,std` on nightly. See `build.sh`.
 threads = ["dep:rayon", "dep:wasm-bindgen-rayon"]
 
 [dependencies]
